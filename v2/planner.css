@@ -1,8 +1,22 @@
 /* Режимы и конструктор планировки */
-.modes{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:18px;background:rgba(0,0,0,.24);padding:5px;border-radius:16px;max-width:520px}
-.modes button{min-height:48px;border:0;border-radius:12px;background:transparent;color:#fff;font-weight:700;font-size:15px;line-height:1.15;cursor:pointer;padding:4px 8px}
-.modes button[aria-pressed="true"]{background:#fff;color:var(--green-d)}
-.modes button:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.modebar{position:sticky;top:0;z-index:7;background:var(--green);padding:6px 0;box-shadow:0 8px 14px -12px rgba(0,0,0,.55)}
+.modes{position:relative;display:grid;grid-template-columns:1fr 1fr;height:56px;background:rgba(0,0,0,.26);padding:4px;border-radius:16px}
+.modes-pill{position:absolute;left:4px;top:4px;bottom:4px;width:calc(50% - 4px);border-radius:12px;background:var(--amber);
+  box-shadow:0 2px 8px rgba(0,0,0,.28);transition:transform .32s cubic-bezier(.3,1.25,.5,1)}
+body.mode-plan .modes-pill{transform:translateX(100%)}
+.modes button{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:7px;min-width:0;border:0;border-radius:12px;background:transparent;
+  color:#fff;cursor:pointer;padding:0 6px;font:inherit;text-align:left;transition:color .2s;-webkit-tap-highlight-color:transparent}
+.modes button svg{flex:none;width:24px;height:24px}
+.modes button>span{display:flex;flex-direction:column;min-width:0;line-height:1.15}
+.modes button b{font-size:15px;font-weight:800;white-space:nowrap}
+.modes button small{font-size:11px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.modes button[aria-pressed="true"]{color:#1d1a12}
+.modes button:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.modes .new{position:absolute;top:-7px;right:6px;background:#fff;color:#b4530a;font-style:normal;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+  padding:2px 7px;border-radius:999px;box-shadow:0 1px 4px rgba(0,0,0,.3);animation:newPulse 1.8s ease-in-out infinite;pointer-events:none}
+body.plan-seen .modes .new{display:none}
+@keyframes newPulse{0%,100%{transform:scale(1);box-shadow:0 1px 4px rgba(0,0,0,.3),0 0 0 0 rgba(255,255,255,.55)}50%{transform:scale(1.08);box-shadow:0 1px 4px rgba(0,0,0,.3),0 0 0 7px rgba(255,255,255,0)}}
+@media (prefers-reduced-motion:reduce){.modes-pill{transition:none}.modes .new{animation:none}}
 
 .steps{counter-reset:st}
 .step[hidden]{display:none}
@@ -33,6 +47,14 @@ body.mode-plan .preview{display:none}
   touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;overscroll-behavior:contain}
 .pl-stage svg{display:block;width:100%;height:100%;touch-action:none;cursor:crosshair}
 .pl-stage text{text-anchor:middle;pointer-events:none;paint-order:stroke;stroke:#fbfaf6;stroke-width:3px;stroke-linejoin:round;font-family:inherit}
+.pl-3d{position:absolute;inset:0;background:#dcebf2}
+.pl-3d canvas,.h3d canvas{display:block;width:100%;height:100%;outline:none;cursor:grab}
+.pl-3d canvas:active,.h3d canvas:active{cursor:grabbing}
+.pl-roof{position:absolute;right:10px;top:10px;z-index:2;display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 14px;border:0;border-radius:12px;
+  background:rgba(255,255,255,.94);color:var(--green-d);font:inherit;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.22)}
+.pl-roof[hidden]{display:none}
+.pl-stage .pl-roof svg{width:20px;height:20px;flex:none;cursor:inherit}
+.pl-roof[aria-pressed="true"]{background:var(--amber);color:#1d1a12}
 .pl-t{font-size:12px;font-weight:700;fill:#26332d}
 .pl-s{font-size:11px;fill:#4f5b56}
 .pl-dim{font-size:12px;font-weight:700;fill:#1d5a47}
@@ -59,14 +81,27 @@ body.mode-plan .preview{display:none}
 .proj .btn.ghost{margin-top:0}
 
 @media (max-width:429px){
+  .modes button{gap:5px;padding:0 4px}
+  .modes button svg{width:20px;height:20px}
+  .modes button b{font-size:13.5px}
+  .modes button small{font-size:10.5px;letter-spacing:-.2px}
   .pl-tools button{font-size:10px;letter-spacing:-.3px}
 }
 @media (max-width:359px){
   .pl-tools button{font-size:9px}
-  .modes button{font-size:14px}
+  .modes button svg{display:none}
+  .modes button b{font-size:14px}
 }
 @media (min-width:960px){
   body.mode-plan .preview{display:block}
+  .modebar{position:static;box-shadow:none;padding:0 0 26px}
+  .modes{height:70px;padding:5px;border-radius:20px}
+  .modes-pill{left:5px;top:5px;bottom:5px;width:calc(50% - 5px);border-radius:15px}
+  .modes button{gap:12px;border-radius:15px}
+  .modes button svg{width:32px;height:32px}
+  .modes button b{font-size:19px}
+  .modes button small{font-size:14px}
+  .modes .new{top:-9px;right:14px;font-size:11px;padding:3px 9px}
   #stepPlan{padding:22px}
   #stepPlan h2,#stepPlan .hint{padding:0}
   .pl-stage{height:540px}

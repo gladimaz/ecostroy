@@ -35,17 +35,20 @@ button,input,textarea{font:inherit;color:inherit}
 .call .num{display:none}
 
 /* Вступление */
-.hero{background:var(--green);color:#fff;padding:8px 0 28px}
+.hero{background:var(--green);color:#fff;padding:8px 0 12px}
 .hero h1{font-size:27px;line-height:1.12;letter-spacing:-.02em;max-width:17em}
 .hero p{margin-top:10px;opacity:.88;max-width:34em}
 .facts{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;padding:0;list-style:none}
 .facts li{background:rgba(255,255,255,.13);border-radius:999px;padding:6px 12px;font-size:14px}
 
 /* Конструктор */
-.builder{display:flex;flex-direction:column;gap:14px;margin-top:-14px}
+.builder{display:flex;flex-direction:column;gap:14px;margin-top:12px;scroll-margin-top:72px}
 .side{display:contents}
 .card{background:var(--card);border-radius:var(--r);padding:16px;box-shadow:0 1px 0 rgba(0,0,0,.04),0 6px 18px -12px rgba(20,40,30,.35)}
-.preview{order:0;position:sticky;top:0;z-index:6;padding:8px 12px 8px}
+.preview{order:0;position:sticky;top:68px;z-index:6;padding:8px 12px 8px}
+.h3d{position:relative;height:150px;border-radius:10px;overflow:hidden;background:#dcebf2}
+.h3d[hidden]{display:none}
+.h3d-tip{position:absolute;left:8px;bottom:8px;font-size:11px;line-height:1;color:#fff;background:rgba(20,40,32,.55);padding:5px 8px;border-radius:999px;pointer-events:none}
 .preview svg{display:block;width:100%;height:132px}
 .preview .cap{font-size:13px;color:var(--mute);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .steps{order:1;display:flex;flex-direction:column;gap:14px;min-width:0}
@@ -190,12 +193,13 @@ footer{margin-top:36px;padding:20px 0;color:var(--mute);font-size:13px;border-to
   body{padding-bottom:0}
   .dock{display:none}
   .call .num{display:inline}.call .lbl{display:none}
-  .hero{padding:20px 0 44px}
+  .hero{padding:20px 0 22px}
   .hero h1{font-size:40px}
-  .builder{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:20px;align-items:start;margin-top:-24px}
+  .builder{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:20px;align-items:start;margin-top:-6px;scroll-margin-top:12px}
   .side{display:flex;flex-direction:column;gap:14px;position:sticky;top:14px;grid-column:2;grid-row:1;max-height:calc(100vh - 28px);overflow:auto;border-radius:var(--r)}
   .preview{position:static;padding:12px}
   .preview svg{height:200px}
+  .h3d{height:270px}
   .steps{grid-column:1;grid-row:1}
   .card{padding:22px}
   .grid.why,.grid.proj{grid-template-columns:repeat(3,1fr)}
@@ -206,7 +210,7 @@ footer{margin-top:36px;padding:20px 0;color:var(--mute);font-size:13px;border-to
 }
 </style>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Crect width='34' height='34' rx='9' fill='%231d5a47'/%3E%3Cpath d='M6 18 17 8l11 10M10 17v9h14v-9' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="planner.css?v=3">
+<link rel="stylesheet" href="planner.css?v=4">
 </head>
 <body>
 
@@ -227,9 +231,21 @@ footer{margin-top:36px;padding:20px 0;color:var(--mute);font-size:13px;border-to
     <ul class="facts">
       <li>На рынке Якутии с 2009 года</li><li>Своё производство</li><li>Все виды ипотеки</li><li>★ 4,9 в 2ГИС</li>
     </ul>
+  </div>
+</div>
+<div class="modebar" id="modebar">
+  <div class="wrap">
     <div class="modes" id="modes" role="group" aria-label="Режим">
-      <button type="button" data-mode="quick" aria-pressed="true">Быстрый расчёт</button>
-      <button type="button" data-mode="plan" aria-pressed="false">Конструктор планировки</button>
+      <span class="modes-pill" aria-hidden="true"></span>
+      <button type="button" data-mode="quick" aria-pressed="true">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 5 13.5h5.5L9.5 22 19 9.5h-6z" fill="currentColor"/></svg>
+        <span><b>Быстрый расчёт</b> <small>за 1 минуту</small></span>
+      </button>
+      <button type="button" data-mode="plan" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 4.5h17v15h-17zM3.5 12h8M11.5 4.5v9M11.5 16.5v3M15.5 12h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span><b>Свой дом</b> <small>двигайте стены и окна</small></span>
+        <em class="new" id="modeNew">Новое</em>
+      </button>
     </div>
   </div>
 </div>
@@ -239,6 +255,7 @@ footer{margin-top:36px;padding:20px 0;color:var(--mute);font-size:13px;border-to
     <aside class="side">
       <div class="card preview" aria-live="off">
         <svg id="house" viewBox="0 0 420 230" role="img" aria-label="Схема дома"></svg>
+        <div class="h3d" id="house3d" hidden><span class="h3d-tip">3D · крутите дом</span></div>
         <div class="cap" id="houseCap"></div>
       </div>
       <div class="card summary" id="summary">
@@ -394,7 +411,7 @@ footer{margin-top:36px;padding:20px 0;color:var(--mute);font-size:13px;border-to
   <a class="btn" href="#lead">Заявка</a>
 </div>
 
-<script src="planner.js?v=3"></script>
+<script src="planner.js?v=4"></script>
 <script>
 /* =====================================================================
    НАСТРОЙКИ. Все цены ПРИМЕРНЫЕ (ориентир по рынку Якутска) —
@@ -722,14 +739,72 @@ function render(live) {
   document.body.classList.toggle('mode-plan', plan);
   $('#stepPlan').hidden = !plan;
   document.querySelectorAll('#modes button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === (plan ? 'plan' : 'quick'))));
+  const is3d = ready3d();
+  if (is3d) { if (!live) draw3d(); else if (!h3raf) h3raf = requestAnimationFrame(() => { h3raf = 0; draw3d(); }); }
   if (plan) {
-    Planner.drawIso($('#house'));
+    if (!is3d) Planner.drawIso($('#house'));
     $('#houseCap').textContent = '3D-вид: ' + fmtM(state.plan.w) + '×' + fmtM(state.plan.d) + ' м, ' + pick('floors', state.floors).name.toLowerCase();
     Planner.refresh();
-  } else drawHouse(c);
+  } else if (!is3d) drawHouse(c);
+  else $('#houseCap').textContent = pick('tech', state.tech).name + ' · ' + state.area + ' м² · ' + pick('floors', state.floors).name.toLowerCase();
   if (!live) saveDraft();
   return c;
 }
+
+/* ================= 3D-модель дома (house3d.js + Three.js из папки vendor, грузится после первого экрана) ================= */
+const SEEN_KEY = 'ecostroy.planSeen';
+let H3 = null, h3inst = null, h3fail = false, h3loading = false, h3raf = 0, quickCache = null;
+function webglOk() {
+  try {
+    const c = document.createElement('canvas'), gl = window.WebGLRenderingContext && (c.getContext('webgl2') || c.getContext('webgl'));
+    return !!gl;
+  } catch (e) { return false; }
+}
+function load3d() {
+  if (H3 || h3loading || h3fail) return;
+  if (!webglOk()) { h3fail = true; return; }                 // нет WebGL — остаётся SVG-схема
+  h3loading = true;
+  import('./house3d.js?v=1').then(m => { H3 = m; render(true); }).catch(() => { h3fail = true; });
+}
+function ready3d() {
+  if (!H3 || h3fail) return false;
+  if (h3inst) return true;
+  const box = $('#house3d'); $('#house').style.display = 'none'; box.hidden = false;
+  try { h3inst = H3.mount(box, { pageScroll: true }); return true; }
+  catch (e) { h3fail = true; box.hidden = true; $('#house').style.display = ''; return false; }
+}
+function garageDims() {
+  if (!state.options.garage) return null;
+  const m = /(\d+)\D+(\d+)/.exec(optSize(CONFIG.options.find(o => o.id === 'garage')).label);
+  return m ? { w: +m[1], d: +m[2] } : { w: 6, d: 6 };
+}
+function spec3d(p) {
+  return Object.assign(Planner.geom(p), { floors: state.floors, tech: state.tech, roofShape: state.roofShape, roofMat: state.roofMat,
+    roofColor: pick('roofMat', state.roofMat).color, foundation: state.foundation, garage: garageDims() });
+}
+// терраса планировки следует за опцией калькулятора
+function syncTerrace(p) {
+  const ta = terraceArea(), t = p.terrace, o = CONFIG.options.find(x => x.id === 'terrace');
+  if (!ta) { if (!t) return false; p.terrace = null; return true; }
+  if (t) { let bi = 0; o.sizes.forEach((z, i) => { if (Math.abs(z - t.len * t.dep) < Math.abs(o.sizes[bi] - t.len * t.dep)) bi = i; }); if (bi === state.optSize.terrace) return false; }
+  p.terrace = Planner.terraceFor(p, ta); return true;
+}
+// дом для быстрого расчёта: своя планировка, если она той же площади, иначе типовая под выбранную площадь
+function quickPlan() {
+  const div = pick('floors', state.floors).div, ta = terraceArea();
+  if (state.plan && Math.abs(Math.round(state.plan.w * state.plan.d * div) - state.area) <= 2) {
+    if (syncTerrace(state.plan)) Planner.setPlan(state.plan);
+    return state.plan;
+  }
+  const k = state.area / div + '|' + ta;
+  if (!quickCache || quickCache.k !== k) quickCache = { k, p: Planner.fromArea(state.area / div, { terrace: ta }) };
+  return quickCache.p;
+}
+function draw3d() {
+  if (!h3inst || $('#house3d').offsetParent === null) return;          // превью скрыто (телефон, конструктор) — не тратим ресурсы
+  h3inst.update(spec3d(planOn() ? state.plan : quickPlan()));
+}
+function markSeen() { try { localStorage.setItem(SEEN_KEY, '1'); } catch (e) {} document.body.classList.add('plan-seen'); }
 
 /* ================= Режимы: быстрый расчёт ↔ конструктор ================= */
 function terraceArea() { const o = CONFIG.options.find(x => x.id === 'terrace'); return state.options.terrace ? optSize(o).n : 0; }
@@ -738,7 +813,7 @@ function setMode(m, fresh) {
   const A = CONFIG.area;
   if (m === 'plan') {
     const div = pick('floors', state.floors).div;
-    Planner.notice('');
+    Planner.notice(''); markSeen();
     if (!state.plan) { Planner.setPlan(newPlanFromCalc(), true); }
     else if (!fresh && state.mode !== 'plan') {
       const pa = Math.round(state.plan.w * state.plan.d * div), want = state.area;
@@ -747,6 +822,7 @@ function setMode(m, fresh) {
         else Planner.notice('В быстром расчёте площадь ' + want + ' м², а в вашей планировке ' + pa + ' м². Планировку оставили как была.', 'Сделать ' + want + ' м²',
           () => { const p = Planner.fromArea(want / div, { terrace: terraceArea() }); p.auto = false; Planner.setPlan(p); render(); });
       }
+      if (syncTerrace(state.plan)) Planner.setPlan(state.plan);
     }
     state.mode = 'plan'; Planner.open();
   } else {
@@ -805,7 +881,10 @@ function build() {
     '<button type="button" class="btn" data-proj="' + i + '">Посчитать такой</button><button type="button" class="btn ghost" data-projplan="' + i + '">Изменить планировку</button><a class="src" href="' + p.link + '" target="_blank" rel="noopener">Пост во ВКонтакте</a></div>').join('');
   $('#projGrid').addEventListener('click', e => {
     const b = e.target.closest('[data-proj]'), bp = e.target.closest('[data-projplan]');
-    if (b) { applyProject(CONFIG.projects[+b.dataset.proj]); setMode('quick'); }
+    if (b) {                                         // типовая планировка проекта: её же увидят в конструкторе
+      const p = CONFIG.projects[+b.dataset.proj]; applyProject(p);
+      Planner.setPlan(Planner.template(p.set.dims[0], p.set.dims[1], { terrace: terraceArea() }), true); setMode('quick');
+    }
     else if (bp) {                                   // проект открывается в конструкторе со своей планировкой
       const p = CONFIG.projects[+bp.dataset.projplan];
       applyProject(p);
@@ -877,9 +956,11 @@ function onSubmit(e) {
 
 loadDraft();
 build();
-Planner.init({ state, CONFIG, onChange: live => render(live) }, $('#planner'));
+Planner.init({ state, CONFIG, onChange: live => render(live), spec3d, need3d: load3d }, $('#planner'));
 if (state.mode === 'plan') Planner.open();
+try { if (state.mode === 'plan' || localStorage.getItem(SEEN_KEY)) document.body.classList.add('plan-seen'); } catch (e) {}
 render();
+if (window.requestIdleCallback) requestIdleCallback(load3d, { timeout: 1500 }); else setTimeout(load3d, 400);
 </script>
 </body>
 </html>

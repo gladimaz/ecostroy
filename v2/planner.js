@@ -56,6 +56,7 @@ window.Planner = (function () {
   const P = () => host.state.plan;
   let root, stage, svg, iso, panelEl, statsEl, hintEl, toastEl, noticeEl;
   let tool = 'hand', sel = null, view3d = false; let stale = 0;
+  let box3, roofBtn, inst3 = null, no3d = false, roofOff = false;   // 3D-модель (house3d.js); если её нет — старая SVG-схема
   const view = { s: 40, ox: 20, oy: 20 };
   let autoFit = true, W = 0, H = 0;
   let hist = [], hi = -1;
@@ -96,6 +97,15 @@ window.Planner = (function () {
     if (t.side === 'N') return { x: r.x + r.w / 2, y: r.y };
     if (t.side === 'W') return { x: r.x, y: r.y + r.h / 2 };
     return { x: r.x + r.w, y: r.y + r.h / 2 };
+  }
+  function terraceFor(p, area) {             // терраса по площади из калькулятора
+    const dep = area >= 24 ? 3 : 2, len = clamp(snap(area / dep), 2, p.w);
+    return { side: 'S', off: p.w - len, len, dep };
+  }
+  function geom(p) {                         // геометрия плана для 3D-модели
+    return { w: p.w, d: p.d, walls: p.walls.map(w => ({ id: w.id, x1: w.x1, y1: w.y1, x2: w.x2, y2: w.y2 })),
+      ops: p.ops.map(o => ({ type: o.type, host: o.host, t: o.t, w: o.w })), ter: terRect(p), terSide: p.terrace ? p.terrace.side : null,
+      rooms: regions(p).map(R => ({ name: R.type ? roomType(R.type).name : 'Комната', area: R.area, x: R.lx, y: R.ly })) };
   }
   const sideLen = (p, side) => (side === 'N' || side === 'S') ? p.w : p.d;
 
@@ -265,8 +275,7 @@ window.Planner = (function () {
     const target = Math.max(3, Math.round(w * d / 9.5));
     wins.slice(0, target).forEach(a => op('win', a[0], a[1], a[2]));
     if (opt.terrace) {
-      const dep = opt.terrace >= 24 ? 3 : 2, len = clamp(snap(opt.terrace / dep), 2, w);
-      p.terrace = { side: 'S', off: w - len, len, dep };
+      p.terrace = terraceFor(p, opt.terrace);
     }
     return sanitize(p);
   }
@@ -494,16 +503,22 @@ window.Planner = (function () {
     panelEl.innerHTML = h;
     const m = metrics(p);
     statsEl.textContent = fm(p.w) + ' × ' + fm(p.d) + ' м · ' + fm(m.foot) + ' м² · комнат ' + m.rooms.length + ' · окон ' + m.win + ' · дверей ' + (m.ent + m.inner) + ' · перегородки ' + fm(m.part) + ' м';
-    hintEl.textContent = view3d ? '3D-вид с улицы: видны две стены, крыша и терраса. Нажмите «3D» ещё раз, чтобы вернуться к плану.' : TOOLS.find(t => t.id === tool).hint;
+    hintEl.textContent = view3d ? (use3d() ? 'Крутите дом пальцем или мышью, приближайте щипком или кнопками. «Снять крышу» покажет комнаты сверху.' : '3D-вид с улицы: видны две стены, крыша и терраса. Нажмите «3D» ещё раз, чтобы вернуться к плану.') : TOOLS.find(t => t.id === tool).hint;
     root.querySelectorAll('[data-tool]').forEach(b => b.setAttribute('aria-pressed', String(!view3d && b.dataset.tool === tool)));
     const q = id => root.querySelector('[data-act="' + id + '"]');
     q('undo').disabled = hi <= 0; q('redo').disabled = hi >= hist.length - 1; q('v3d').setAttribute('aria-pressed', String(view3d));
-    ['zin', 'zout', 'fit'].forEach(id => { q(id).disabled = view3d; });
+    ['zin', 'zout', 'fit'].forEach(id => { q(id).disabled = view3d && !use3d(); });
   }
+  function use3d() { return view3d && !no3d && !!window.House3D && !!host.spec3d; }
   function refresh() {
     if (!root || !P()) return;
-    svg.style.display = view3d ? 'none' : ''; iso.style.display = view3d ? '' : 'none';
-    if (view3d) drawIso(iso); else drawPlan();
+    if (view3d && !window.House3D && host.need3d) host.need3d();          // модуль ещё не загружен — попросим, пока покажем схему
+    let on = use3d();
+    if (on && !inst3) { box3.style.display = ''; try { inst3 = window.House3D.mount(box3, {}); } catch (e) { no3d = true; on = false; } }
+    svg.style.display = view3d ? 'none' : ''; box3.style.display = on ? '' : 'none'; iso.style.display = view3d && !on ? '' : 'none';
+    roofBtn.hidden = !on; roofBtn.setAttribute('aria-pressed', String(roofOff)); roofBtn.lastChild.textContent = roofOff ? 'Вернуть крышу' : 'Снять крышу';
+    if (on) { inst3.update(host.spec3d(P())); inst3.setRoofOff(roofOff); }
+    else if (view3d) drawIso(iso); else drawPlan();
     panel();
   }
   function toast(t) { toastEl.textContent = t; toastEl.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('on'), 2200); }
@@ -548,9 +563,10 @@ window.Planner = (function () {
     switch (ds.act) {
       case 'undo': travel(-1); break;
       case 'redo': travel(1); break;
-      case 'zin': zoomAt(W / 2, H / 2, 1.25); refresh(); break;
-      case 'zout': zoomAt(W / 2, H / 2, 0.8); refresh(); break;
-      case 'fit': autoFit = true; refresh(); break;
+      case 'zin': if (use3d() && inst3) inst3.zoom(1.25); else { zoomAt(W / 2, H / 2, 1.25); refresh(); } break;
+      case 'zout': if (use3d() && inst3) inst3.zoom(0.8); else { zoomAt(W / 2, H / 2, 0.8); refresh(); } break;
+      case 'fit': if (use3d() && inst3) inst3.fit(); else { autoFit = true; refresh(); } break;
+      case 'roof': roofOff = !roofOff; refresh(); break;
       case 'v3d': view3d = !view3d; refresh(); break;
       case 'del': removeSel(); break;
       case 'terAdd': p.terrace = { side: 'S', off: Math.max(0, p.w - 4), len: Math.min(4, p.w), dep: 2 }; sanitize(p); sel = { kind: 'ter' }; tool = 'hand'; autoFit = true; commit(); break;
@@ -748,11 +764,12 @@ window.Planner = (function () {
     const btn = (attr, t) => '<button type="button" ' + attr + '="' + t.id + '" title="' + t.name + '" aria-label="' + t.name + '"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">' + t.icon + '</svg><span>' + t.name + '</span></button>';
     root.innerHTML = '<div class="pl-tools" role="toolbar" aria-label="Инструменты">' + TOOLS.map(t => btn('data-tool', t)).join('') + '</div>' +
       '<p class="pl-hint" id="plHint"></p>' +
-      '<div class="pl-stage" id="plStage"><svg id="plSvg" role="img" aria-label="План дома"></svg><svg id="plIso" viewBox="0 0 420 230" role="img" aria-label="3D-вид дома" style="display:none"></svg><div class="pl-toast" id="plToast" role="status"></div></div>' +
+      '<div class="pl-stage" id="plStage"><svg id="plSvg" role="img" aria-label="План дома"></svg><svg id="plIso" viewBox="0 0 420 230" role="img" aria-label="3D-вид дома" style="display:none"></svg><div class="pl-3d" id="pl3d" style="display:none"></div>' +
+      '<button type="button" class="pl-roof" data-act="roof" aria-pressed="false" hidden><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3 11 12 4l9 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 14v6h12v-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-dasharray="3 2.5"/></svg><span>Снять крышу</span></button><div class="pl-toast" id="plToast" role="status"></div></div>' +
       '<div class="pl-acts">' + ACTS.map(t => btn('data-act', t)).join('') + '</div>' +
       '<div class="pl-notice" id="plNotice" hidden></div><div class="pl-panel" id="plPanel"></div><p class="pl-stats" id="plStats"></p>';
     const q = s => root.querySelector(s);
-    stage = q('#plStage'); svg = q('#plSvg'); iso = q('#plIso'); panelEl = q('#plPanel'); statsEl = q('#plStats'); hintEl = q('#plHint'); toastEl = q('#plToast'); noticeEl = q('#plNotice');
+    stage = q('#plStage'); svg = q('#plSvg'); iso = q('#plIso'); box3 = q('#pl3d'); roofBtn = q('.pl-roof'); panelEl = q('#plPanel'); statsEl = q('#plStats'); hintEl = q('#plHint'); toastEl = q('#plToast'); noticeEl = q('#plNotice');
     root.addEventListener('click', onClick);
     svg.addEventListener('pointerdown', onDown); svg.addEventListener('pointermove', onMove);
     svg.addEventListener('pointerup', onUp); svg.addEventListener('pointercancel', onUp); svg.addEventListener('lostpointercapture', onUp);
@@ -770,7 +787,7 @@ window.Planner = (function () {
       p.ops.every(o => Number.isFinite(o.t) && Number.isFinite(o.w) && typeof o.host === 'string' && (o.type === 'win' || o.type === 'door'));
   }
 
-  return { init, refresh, template, fromArea, metrics, describe, drawIso, setPlan, notice, sanitize, valid,
+  return { init, refresh, template, fromArea, metrics, describe, drawIso, setPlan, geom, terraceFor, notice, sanitize, valid,
            open() { autoFit = true; view3d = false; sel = null; tool = 'hand'; if (!hist.length) resetHistory(); },
-           _dbg: { view, get sel() { return sel; }, get hist() { return [hist.length, hi]; }, get ptrs() { return [ptrs.size, !!pinch, stale]; } } };
+           _dbg: { view, get sel() { return sel; }, get v3() { return { view3d, on: use3d(), roofOff, inst: inst3 }; }, get hist() { return [hist.length, hi]; }, get ptrs() { return [ptrs.size, !!pinch, stale]; } } };
 })();
