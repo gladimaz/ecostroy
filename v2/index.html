@@ -1,1 +1,885 @@
-<!doctype html><html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ЭкостройИнвест — версия 2 готовится</title><body style="font-family:system-ui;padding:32px;max-width:560px;margin:auto"><h1>Версия 2 готовится</h1><p>Калькулятор + конструктор планировки. Пока смотрите <a href="../v1/">версию 1</a>.</p></body></html>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ЭкоСтройИнвест — калькулятор дома в Якутске</title>
+<meta name="description" content="Соберите дом в конструкторе и сразу узнайте примерную стоимость и срок строительства в Якутске.">
+<style>
+:root{
+  --green:#1d5a47; --green-d:#143f32; --green-l:#e4efe9;
+  --amber:#e39a2d; --amber-d:#b97614;
+  --bg:#f4f2ec; --card:#ffffff; --ink:#1a2420; --mute:#5f6b66; --line:#dcd8cd;
+  --warn-bg:#fff4dc; --warn:#7a5200;
+  --r:16px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  padding-bottom:calc(84px + env(safe-area-inset-bottom));overflow-x:hidden}
+h1,h2,h3,p{margin:0}
+a{color:inherit}
+button,input,textarea{font:inherit;color:inherit}
+.wrap{max-width:1160px;margin:0 auto;padding:0 16px}
+
+/* Шапка */
+.top{background:var(--green);color:#fff}
+.top .wrap{display:flex;align-items:center;gap:12px;min-height:60px}
+.logo{display:flex;align-items:center;gap:10px;min-width:0;flex:1;text-decoration:none}
+.logo svg{flex:none}
+.logo b{display:block;font-size:17px;line-height:1.1;letter-spacing:-.01em}
+.logo span{display:block;font-size:12px;opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.call{flex:none;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border-radius:12px;
+  background:var(--amber);color:#1f1602;font-weight:700;text-decoration:none;white-space:nowrap}
+.call .num{display:none}
+
+/* Вступление */
+.hero{background:var(--green);color:#fff;padding:8px 0 28px}
+.hero h1{font-size:27px;line-height:1.12;letter-spacing:-.02em;max-width:17em}
+.hero p{margin-top:10px;opacity:.88;max-width:34em}
+.facts{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;padding:0;list-style:none}
+.facts li{background:rgba(255,255,255,.13);border-radius:999px;padding:6px 12px;font-size:14px}
+
+/* Конструктор */
+.builder{display:flex;flex-direction:column;gap:14px;margin-top:-14px}
+.side{display:contents}
+.card{background:var(--card);border-radius:var(--r);padding:16px;box-shadow:0 1px 0 rgba(0,0,0,.04),0 6px 18px -12px rgba(20,40,30,.35)}
+.preview{order:0;position:sticky;top:0;z-index:6;padding:8px 12px 8px}
+.preview svg{display:block;width:100%;height:132px}
+.preview .cap{font-size:13px;color:var(--mute);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.steps{order:1;display:flex;flex-direction:column;gap:14px;min-width:0}
+.summary{order:2}
+
+.step h2{font-size:18px;display:flex;align-items:center;gap:10px;letter-spacing:-.01em}
+.step h2 i{flex:none;font-style:normal;width:28px;height:28px;border-radius:50%;background:var(--green-l);color:var(--green);
+  font-size:14px;font-weight:700;display:grid;place-items:center}
+.step .hint{color:var(--mute);font-size:14px;margin-top:4px}
+.opts{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px}
+.opts.two{grid-template-columns:1fr 1fr}
+.opts.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.opt{position:relative;display:block;width:100%;text-align:left;background:#fff;border:2px solid var(--line);border-radius:14px;
+  padding:12px 14px;min-height:56px;cursor:pointer;transition:border-color .12s,background .12s}
+.opt b{display:block;font-size:16px;line-height:1.2}
+.opt small{display:block;color:var(--mute);font-size:13px;line-height:1.3;margin-top:3px}
+.opt em{display:block;font-style:normal;font-size:13px;font-weight:600;color:var(--green);margin-top:4px}
+.opt[aria-pressed="true"]{border-color:var(--green);background:var(--green-l)}
+.opt[aria-pressed="true"]::after{content:"";position:absolute;right:10px;top:10px;width:20px;height:20px;border-radius:50%;
+  background:var(--green) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5.5 10.5l3 3 6-7' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/20px}
+.opt[aria-pressed="true"] b{padding-right:26px}
+.opts.three .opt{padding:12px 8px}
+.opts.three .opt b{font-size:15px;overflow-wrap:anywhere}
+.opts.three .opt[aria-pressed="true"] b{padding-right:0}
+.opts.three .opt[aria-pressed="true"]::after{display:none}
+.opt,.card,.steps,.sub{min-width:0}
+.opt:focus-visible,.chip:focus-visible,.btn:focus-visible,.call:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.warn{margin-top:10px;background:var(--warn-bg);color:var(--warn);border-radius:12px;padding:10px 12px;font-size:14px}
+.warn[hidden]{display:none}
+
+/* Площадь */
+.area-row{display:flex;align-items:center;gap:12px;margin-top:14px}
+.area-num{display:flex;align-items:baseline;gap:6px;border:2px solid var(--line);border-radius:14px;padding:6px 12px;background:#fff;flex:none}
+.area-num input{width:3.4em;border:0;outline:0;font-size:26px;font-weight:700;background:transparent;padding:0;-moz-appearance:textfield;appearance:textfield}
+.area-num input::-webkit-outer-spin-button,.area-num input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.area-num:focus-within{border-color:var(--green)}
+.area-num span{color:var(--mute)}
+.pm{display:flex;gap:8px;margin-left:auto}
+.pm button{width:48px;height:48px;border-radius:14px;border:2px solid var(--line);background:#fff;font-size:24px;line-height:1;cursor:pointer}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:36px;background:transparent;margin:10px 0 0;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:8px;border-radius:8px;background:linear-gradient(to right,var(--green) var(--p,25%),var(--line) var(--p,25%))}
+input[type=range]::-moz-range-track{height:8px;border-radius:8px;background:var(--line)}
+input[type=range]::-moz-range-progress{height:8px;border-radius:8px;background:var(--green)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;border-radius:50%;background:#fff;border:3px solid var(--green);margin-top:-11px;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:#fff;border:3px solid var(--green)}
+.scale{display:flex;justify-content:space-between;color:var(--mute);font-size:12px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chip{min-height:44px;padding:0 14px;border-radius:999px;border:2px solid var(--line);background:#fff;cursor:pointer;font-weight:600}
+.chip[aria-pressed="true"]{border-color:var(--green);background:var(--green-l);color:var(--green-d)}
+.sub{margin-top:10px;padding:10px 12px;border-radius:12px;background:#f6f5f0}
+.sub[hidden]{display:none}
+.sub p{font-size:14px;color:var(--mute)}
+
+/* Итог */
+.summary h2{font-size:15px;color:var(--mute);font-weight:600}
+.total{font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1.15;margin-top:4px}
+.total small{display:block;font-size:14px;font-weight:500;color:var(--mute);letter-spacing:0;margin-top:4px}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.kpis div{background:#f6f5f0;border-radius:12px;padding:10px 12px}
+.kpis span{display:block;font-size:12px;color:var(--mute)}
+.kpis b{font-size:17px}
+.rows{list-style:none;padding:0;margin:14px 0 0}
+.rows li{padding:9px 0;border-top:1px solid var(--line)}
+.rows .r{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.rows .r span{min-width:0}
+.rows .r b{white-space:nowrap;font-variant-numeric:tabular-nums}
+.rows small{display:block;color:var(--mute);font-size:12px}
+.bar{height:4px;border-radius:4px;background:var(--line);margin-top:6px;overflow:hidden}
+.bar u{display:block;height:100%;background:var(--green);border-radius:4px}
+.note{margin-top:12px;font-size:13px;color:var(--warn);background:var(--warn-bg);border-radius:12px;padding:10px 12px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:54px;border:0;border-radius:14px;
+  background:var(--amber);color:#1f1602;font-weight:700;font-size:17px;cursor:pointer;text-decoration:none;padding:0 16px;text-align:center}
+.btn:active{background:var(--amber-d)}
+.btn.green{background:#1fa855;color:#fff}
+.btn.ghost{background:transparent;border:2px solid var(--line);color:var(--ink);font-weight:600}
+.summary .btn{margin-top:14px}
+
+/* Липкая плашка */
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--green-d);color:#fff;
+  padding:10px 12px calc(10px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.2)}
+.dock .t{min-width:0;flex:1}
+.dock .t b{display:block;font-size:19px;line-height:1.15;white-space:nowrap;letter-spacing:-.01em}
+.dock .t span{display:block;font-size:12px;opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dock .btn{width:auto;min-height:48px;font-size:16px;flex:none;padding:0 16px}
+
+/* Секции ниже */
+section.blk{margin-top:36px}
+section.blk>h2{font-size:23px;letter-spacing:-.02em;margin-bottom:14px}
+.grid{display:grid;gap:10px;grid-template-columns:1fr}
+.why .card b{display:block;font-size:17px}
+.why .card p{color:var(--mute);font-size:14px;margin-top:4px}
+.why .big{font-size:28px;font-weight:800;color:var(--green);letter-spacing:-.02em}
+.proj .card{display:flex;flex-direction:column;gap:6px}
+.proj b{font-size:18px}
+.proj .meta{font-size:13px;font-weight:600;color:var(--green)}
+.proj p{font-size:14px;color:var(--mute)}
+.proj .fact{font-size:13px;background:var(--green-l);border-radius:10px;padding:6px 10px;color:var(--green-d)}
+.proj .pp{font-weight:700;font-size:16px;color:var(--ink)}
+.proj .btn{min-height:48px;font-size:16px;margin-top:auto}
+.proj a.src{font-size:13px;color:var(--mute);text-align:center;padding:6px}
+.faq details{background:var(--card);border-radius:14px;margin-bottom:8px}
+.faq summary{padding:16px;font-weight:600;cursor:pointer;min-height:54px}
+.faq p{padding:0 16px 16px;color:var(--mute);font-size:15px}
+.stages{counter-reset:s;list-style:none;padding:0;margin:0;display:grid;gap:10px}
+.stages li{counter-increment:s;background:var(--card);border-radius:var(--r);padding:14px 16px 14px 58px;position:relative}
+.stages li::before{content:counter(s);position:absolute;left:14px;top:14px;width:32px;height:32px;border-radius:50%;background:var(--green);color:#fff;font-weight:700;display:grid;place-items:center}
+.stages b{display:block}
+.stages span{color:var(--mute);font-size:14px}
+
+/* Форма */
+.form label{display:block;font-size:14px;font-weight:600;margin-top:14px}
+.form input[type=text],.form input[type=tel],.form textarea{display:block;width:100%;margin-top:6px;border:2px solid var(--line);border-radius:14px;
+  padding:13px 14px;font-size:16px;background:#fff;outline:0}
+.form input:focus,.form textarea:focus{border-color:var(--green)}
+.form textarea{min-height:92px;resize:vertical}
+.form .err{color:#b3261e;font-size:13px;margin-top:6px;min-height:0}
+.form .btn{margin-top:16px}
+.form .fine{font-size:12px;color:var(--mute);margin-top:10px}
+.mini{background:var(--green-l);border-radius:12px;padding:10px 12px;font-size:14px;margin-top:4px}
+.done h3{font-size:22px;letter-spacing:-.02em}
+.done pre{white-space:pre-wrap;word-break:break-word;font:14px/1.5 inherit;font-family:inherit;background:#f6f5f0;border-radius:12px;padding:12px;margin:12px 0}
+.done .btn+.btn{margin-top:10px}
+.contacts .card p{margin-top:8px}
+.contacts .card p span{display:block;font-size:12px;color:var(--mute)}
+.contacts a{font-weight:600;text-decoration:none;color:var(--green);word-break:break-word}
+.contacts .acts{display:grid;gap:10px;margin-top:16px}
+footer{margin-top:36px;padding:20px 0;color:var(--mute);font-size:13px;border-top:1px solid var(--line)}
+
+@media (max-width:359px){
+  .opts.three{grid-template-columns:1fr}
+  .hero h1{font-size:24px}
+  .dock .t b{font-size:17px}
+}
+@media (min-width:600px){
+  .opts{grid-template-columns:1fr 1fr}
+  .opts.cols3{grid-template-columns:repeat(3,1fr)}
+  .grid{grid-template-columns:1fr 1fr}
+  .stages{grid-template-columns:1fr 1fr}
+  .contacts .acts{grid-template-columns:1fr 1fr}
+}
+@media (min-width:960px){
+  body{padding-bottom:0}
+  .dock{display:none}
+  .call .num{display:inline}.call .lbl{display:none}
+  .hero{padding:20px 0 44px}
+  .hero h1{font-size:40px}
+  .builder{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:20px;align-items:start;margin-top:-24px}
+  .side{display:flex;flex-direction:column;gap:14px;position:sticky;top:14px;grid-column:2;grid-row:1;max-height:calc(100vh - 28px);overflow:auto;border-radius:var(--r)}
+  .preview{position:static;padding:12px}
+  .preview svg{height:200px}
+  .steps{grid-column:1;grid-row:1}
+  .card{padding:22px}
+  .grid.why,.grid.proj{grid-template-columns:repeat(3,1fr)}
+  .stages{grid-template-columns:repeat(3,1fr)}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+  .two-col section.blk{margin-top:44px}
+  section.blk{margin-top:44px}
+}
+</style>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Crect width='34' height='34' rx='9' fill='%231d5a47'/%3E%3Cpath d='M6 18 17 8l11 10M10 17v9h14v-9' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="planner.css?v=3">
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="#top" aria-label="ЭкоСтройИнвест">
+      <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="9" fill="#fff"/><path d="M6 18 17 8l11 10" fill="none" stroke="#1d5a47" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 17v9h14v-9" fill="none" stroke="#1d5a47" stroke-width="3" stroke-linejoin="round"/><rect x="15" y="19" width="4" height="7" fill="#e39a2d"/></svg>
+      <span style="min-width:0"><b>ЭкоСтройИнвест</b><span>Дома под ключ · Якутск</span></span>
+    </a>
+    <a class="call" id="callTop" href="#"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25c1.1.37 2.3.57 3.6.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z"/></svg><span class="lbl">Позвонить</span><span class="num" id="callNum"></span></a>
+  </div>
+</header>
+
+<div class="hero" id="top">
+  <div class="wrap">
+    <h1>Соберите свой дом и сразу узнайте цену</h1>
+    <p>Дома из каркасных панелей и профилированного бруса собственного производства. Выберите параметры — цена и срок пересчитаются сразу.</p>
+    <ul class="facts">
+      <li>На рынке Якутии с 2009 года</li><li>Своё производство</li><li>Все виды ипотеки</li><li>★ 4,9 в 2ГИС</li>
+    </ul>
+    <div class="modes" id="modes" role="group" aria-label="Режим">
+      <button type="button" data-mode="quick" aria-pressed="true">Быстрый расчёт</button>
+      <button type="button" data-mode="plan" aria-pressed="false">Конструктор планировки</button>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="builder" id="calc">
+    <aside class="side">
+      <div class="card preview" aria-live="off">
+        <svg id="house" viewBox="0 0 420 230" role="img" aria-label="Схема дома"></svg>
+        <div class="cap" id="houseCap"></div>
+      </div>
+      <div class="card summary" id="summary">
+        <h2>Примерная стоимость</h2>
+        <div class="total" id="totalRange" aria-live="polite"></div>
+        <div class="kpis">
+          <div><span>Срок строительства</span><b id="kpiTime"></b></div>
+          <div><span>За 1 м²</span><b id="kpiM2"></b></div>
+        </div>
+        <ul class="rows" id="rows"></ul>
+        <p class="note" id="priceNote"></p>
+        <a class="btn" href="#lead">Получить точную смету</a>
+      </div>
+    </aside>
+
+    <div class="steps" id="steps">
+      <div class="card step" id="stepPlan" hidden>
+        <h2><i></i>Планировка дома</h2>
+        <p class="hint">Нарисуйте дом сами: стены, перегородки, окна, двери, комнаты. Цена и срок считаются от плана.</p>
+        <div id="planner"></div>
+        <button type="button" class="pl-back" data-mode="quick">← Вернуться к быстрому расчёту (площадь перенесётся)</button>
+      </div>
+
+      <div class="card step"><h2><i></i>Материал стен</h2><p class="hint">Обе технологии — на материалах собственного производства в Якутске.</p><div class="opts" data-group="tech"></div></div>
+
+      <div class="card step" id="stepArea"><h2><i></i>Площадь дома</h2>
+        <p class="hint">Общая площадь по всем этажам.</p>
+        <div class="area-row">
+          <label class="area-num"><input id="areaNum" type="number" inputmode="numeric" aria-label="Площадь, м²"><span>м²</span></label>
+          <div class="pm"><button type="button" id="areaMinus" aria-label="Меньше">−</button><button type="button" id="areaPlus" aria-label="Больше">+</button></div>
+        </div>
+        <input id="areaRange" type="range" aria-label="Площадь дома">
+        <div class="scale"><span id="areaMin"></span><span id="areaMax"></span></div>
+        <div class="sub" style="background:none;padding:0"><p>Популярные размеры</p><div class="chips" id="areaChips"></div></div>
+        <button type="button" class="btn ghost to-plan" data-mode="plan">Нарисовать планировку самому →</button>
+      </div>
+
+      <div class="card step"><h2><i></i>Этажность</h2><div class="opts three" data-group="floors"></div></div>
+
+      <div class="card step"><h2><i></i>Фундамент</h2>
+        <p class="hint">Тип подбираем под грунт и мерзлоту на участке — выезд на участок бесплатный.</p>
+        <div class="opts" data-group="foundation"></div>
+        <p class="warn" id="foundWarn" hidden></p>
+      </div>
+
+      <div class="card step"><h2><i></i>Кровля</h2>
+        <div class="opts cols3" data-group="roofShape"></div>
+        <div class="opts cols3" data-group="roofMat"></div>
+      </div>
+
+      <div class="card step"><h2><i></i>Стены и утепление</h2>
+        <p class="hint">Под якутскую зиму: чем толще стена, тем меньше счёт за отопление.</p>
+        <div class="opts" id="wallOpts"></div>
+      </div>
+
+      <div class="card step"><h2><i></i>Отделка</h2><div class="opts cols3" data-group="finish"></div></div>
+
+      <div class="card step"><h2><i></i>Дополнительно</h2>
+        <p class="hint">Можно выбрать несколько.</p>
+        <div class="opts" id="extras"></div>
+        <div id="optSubs"></div>
+      </div>
+    </div>
+  </div>
+
+  <section class="blk" id="lead">
+    <h2>Заявка на точную смету</h2>
+    <div class="card form" id="leadBox">
+      <form id="leadForm" novalidate>
+        <div class="mini" id="leadMini"></div>
+        <label for="fName">Как к вам обращаться</label>
+        <input id="fName" name="name" type="text" autocomplete="name" placeholder="Имя">
+        <label for="fPhone">Телефон</label>
+        <input id="fPhone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+7 ___ ___-__-__">
+        <div class="err" id="fErr" role="alert"></div>
+        <label>Как удобнее связаться</label>
+        <div class="chips" id="contactChips">
+          <button type="button" class="chip" data-v="Звонок" aria-pressed="true">Звонок</button>
+          <button type="button" class="chip" data-v="WhatsApp" aria-pressed="false">WhatsApp</button>
+        </div>
+        <label for="fMsg">Комментарий</label>
+        <textarea id="fMsg" name="msg" placeholder="Есть ли участок, когда хотите начать, пожелания"></textarea>
+        <button class="btn" type="submit">Отправить заявку</button>
+        <p class="fine">Заявка пока никуда не отправляется: после нажатия покажем расчёт и кнопку отправки в WhatsApp.</p>
+      </form>
+    </div>
+  </section>
+
+  <section class="blk" id="projects">
+    <h2>Наши проекты — посчитайте такой же</h2>
+    <div class="grid proj" id="projGrid"></div>
+  </section>
+
+  <section class="blk">
+    <h2>Почему мы</h2>
+    <div class="grid why">
+      <div class="card"><div class="big">С 2009 года</div><b>строим в Якутии</b><p>Дома, коттеджи, бани, гаражи. Состоим в СРО «Союз строителей Якутии».</p></div>
+      <div class="card"><div class="big">Свой завод</div><b>панели, брус, отделка</b><p>Каркасные панели, профилированный брус и имитацию бруса делаем сами в Якутске. Проводим экскурсии на производство.</p></div>
+      <div class="card"><div class="big">Не СИП</div><b>тёплые экологичные панели</b><p>Наши каркасные панели в 4 раза теплее брусовой стены, без усадки — можно сразу заезжать.</p></div>
+      <div class="card"><div class="big">Круглый год</div><b>собираем и зимой</b><p>Домокомплект собирается за считаные дни; отправляем в улусы, можно собрать самостоятельно.</p></div>
+      <div class="card"><div class="big">Ипотека</div><b>все программы и соцвыплаты</b><p>Помогаем с одобрением прямо в офисе и с первоначальным взносом.</p></div>
+      <div class="card"><div class="big">★ 4,9</div><b>оценка в 2ГИС</b><p>125 оценок. Бесплатный выезд на участок и консультация.</p></div>
+    </div>
+  </section>
+
+  <section class="blk">
+    <h2>Как мы работаем</h2>
+    <ol class="stages">
+      <li><b>Бесплатная консультация</b><span>В офисе или с выездом на участок: бюджет, проект, ипотека.</span></li>
+      <li><b>Проект и смета</b><span>Подбираем планировку, считаем точную стоимость.</span></li>
+      <li><b>Договор</b><span>Фиксируем цену, сроки и этапы оплаты. Возможна ипотека.</span></li>
+      <li><b>Производство домокомплекта</b><span>Панели или брус изготавливаем на своём заводе в Якутске.</span></li>
+      <li><b>Фундамент и сборка</b><span>Фундамент на регулируемых опорах — за день, коробка — за считаные дни.</span></li>
+      <li><b>Отделка и сдача</b><span>Инженерные сети, отделка, приёмка.</span></li>
+    </ol>
+  </section>
+
+  <section class="blk">
+    <h2>Частые вопросы</h2>
+    <div class="faq">
+      <details><summary>Что входит в домокомплект?</summary><p>Цокольные панели, панели кровли, панели внешних и внутренних стен с готовыми проёмами под окна и двери. Фундамент, сборку, окна, двери и отделку можно заказать у нас же — под ключ.</p></details>
+      <details><summary>Можно ли собрать дом самостоятельно?</summary><p>Да. Панели не требуют дополнительного каркаса, комплект промаркирован. Поэтому домокомплекты часто заказывают в отдалённые улусы.</p></details>
+      <details><summary>Строите ли вы зимой?</summary><p>Да, производим и собираем круглый год.</p></details>
+      <details><summary>Это СИП-панели?</summary><p>Нет. Это каркасные панели нашего производства, соответствуют ГОСТ и СП 31-105-2002; панели проходят испытания на огнестойкость.</p></details>
+      <details><summary>Можно ли в ипотеку?</summary><p>Да, работаем со всеми видами ипотеки и социальными выплатами, помогаем с одобрением в офисе.</p></details>
+    </div>
+  </section>
+
+  <section class="blk contacts" id="contacts">
+    <h2>Контакты</h2>
+    <div class="card">
+      <b id="cName"></b>
+      <p><span>Адрес</span><i id="cAddr" style="font-style:normal"></i></p>
+      <p><span>Телефон</span><a id="cPhone" href="#"></a></p>
+      <p><span>WhatsApp / Telegram</span><a id="cWa" href="#"></a></p>
+      <p><span>Почта</span><a id="cMail" href="#"></a></p>
+      <p><span>Часы работы</span><i id="cHours" style="font-style:normal"></i></p>
+      <div class="acts">
+        <a class="btn" id="cCall" href="#">Позвонить</a>
+        <a class="btn green" id="cWaBtn" href="#" target="_blank" rel="noopener">Написать в WhatsApp</a>
+        <a class="btn ghost" id="cVk" href="#" target="_blank" rel="noopener">Группа ВКонтакте</a>
+        <a class="btn ghost" id="cGis" href="#" target="_blank" rel="noopener">Мы в 2ГИС</a>
+        <a class="btn ghost" id="cTg" href="#" target="_blank" rel="noopener">Канал в Telegram</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>Расчёт в калькуляторе примерный и не является публичной офертой. Точная стоимость фиксируется в договоре после выезда на участок и согласования проекта.</footer>
+</main>
+
+<div class="dock" id="dock">
+  <div class="t"><b id="dockTotal"></b><span id="dockSub"></span></div>
+  <a class="btn" href="#lead">Заявка</a>
+</div>
+
+<script src="planner.js?v=3"></script>
+<script>
+/* =====================================================================
+   НАСТРОЙКИ. Все цены ПРИМЕРНЫЕ (ориентир по рынку Якутска) —
+   владелец заменяет цифры здесь, остальной код трогать не нужно.
+   ===================================================================== */
+const CONFIG = {
+  company: {
+    name: 'ЭкоСтройИнвест',
+    phone: '+79142726700',          // основной телефон (2ГИС)
+    whatsapp: '79644268085',        // WhatsApp / Telegram (2ГИС и посты VK 2026 г.)
+    email: '250_700@mail.ru',
+    address: 'Якутск, ул. Петровского, 19, офис 302а, 3 этаж',
+    hours: '09:00–18:00, консультации по предварительной записи',   // дни недели не подтверждены
+    vk: 'https://vk.ru/ecostroy_ykt',
+    tg: 'https://t.me/ecostroy_ykt',
+    gis: 'https://2gis.ru/yakutsk/firm/70000001035369724'
+  },
+  priceNote: 'Цены примерные, уточняются. Часть цифр — из прайса и постов компании, остальное — ориентир по рынку. Итог зависит от проекта и участка.',
+  range: { low: 0.93, high: 1.12 },            // вилка вокруг расчётной суммы
+  area: { min: 30, max: 250, step: 2, def: 76, popular: [44, 54, 76, 98, 150] },   // площади из реальных проектов в VK
+
+  // kit — домокомплект, ₽ за м² общей площади; build — сборка и перекрытия, ₽/м²; days — дней на 1 м².
+  // walls — толщина стен: доплата ₽/м² к домокомплекту.
+  tech: [
+    { id: 'frame', name: 'Каркасные панели', desc: 'Домокомплект своего производства (не СИП), без усадки',
+      kit: 18000,      // РЕАЛЬНАЯ: «каркасный домокомплект от 18 000 ₽» (2ГИС)
+      build: 6000,     // примерная
+      days: 0.12,
+      walls: [
+        { id: 'std', name: 'Панели 150 мм', desc: 'Круглогодичный дом или дача', perM2: 0 },
+        { id: 'plus', name: 'Панели 200 мм', desc: 'Максимум тепла для постоянной жизни', perM2: 2500 }   // примерная
+      ] },
+    { id: 'timber', name: 'Профилированный брус', desc: 'Брус своего производства, пружинные узлы и межвенцовый утеплитель',
+      kit: 12000,      // ОЦЕНКА по посту: комплект стен 5,42×5,42 из бруса 18×18 — 310 000 ₽ (только стены)
+      build: 18000,    // примерная: сборка, полы, перекрытия, стропила
+      days: 0.30,
+      walls: [
+        { id: 'std', name: 'Брус 15×18 см', desc: 'Стена 15 см', perM2: 0 },
+        { id: 'plus', name: 'Брус 18×18 см', desc: 'Стена 18 см, теплее', perM2: 1500 }                    // примерная
+      ] }
+  ],
+  openingsPerM2: 8000,                          // окна и входная дверь, ₽/м² — примерная
+  // div — во сколько раз пятно застройки меньше общей площади; boxK — поправка к домокомплекту; timeK — к сроку
+  floors: [
+    { id: '1', name: '1 этаж', div: 1, boxK: 1.00, timeK: 1.00 },
+    { id: '1.5', name: 'С мансардой', div: 1.6, boxK: 0.95, timeK: 1.05 },
+    { id: '2', name: '2 этажа', div: 2, boxK: 0.97, timeK: 1.10 }
+  ],
+  // ₽ за м² пятна застройки — ВСЕ примерные. Типы фундаментов — из постов компании.
+  foundation: [
+    { id: 'rcpad', name: 'Регулируемые ж/б опоры', desc: 'Наша разработка: монтаж за 1 день, дом можно выравнивать в будущем', perM2: 6000, days: 1, notFor: [] },
+    { id: 'screw', name: 'Винтовые сваи', desc: 'Для лёгких каркасных домов', perM2: 7500, days: 4, notFor: [] },
+    { id: 'strip', name: 'Ленточный', desc: 'Железобетонная лента по периметру и под несущими стенами', perM2: 12000, days: 21, notFor: [] },
+    { id: 'slab', name: 'Плита', desc: 'Утеплённая монолитная плита', perM2: 16000, days: 20, notFor: [] }
+  ],
+  // k — отношение площади кровли к пятну застройки
+  roofShape: [
+    { id: 'gable', name: 'Двускатная', k: 1.25 },
+    { id: 'shed', name: 'Односкатная', k: 1.12 },
+    { id: 'hip', name: 'Вальмовая', k: 1.38 }
+  ],
+  // кровельное покрытие с монтажом, ₽ за м² кровли — примерные
+  roofMat: [
+    { id: 'metal', name: 'Металлочерепица', perM2: 4500, color: '#8a3b2f' },
+    { id: 'prof', name: 'Профнастил', perM2: 3800, color: '#6b7780' },
+    { id: 'soft', name: 'Мягкая черепица', perM2: 6200, color: '#3d4a3f' }
+  ],
+  // доплата ₽ за м² общей площади — примерные; days — дней на 1 м²
+  finish: [
+    { id: 'shell', name: 'Тёплый контур', desc: 'Без внутренней отделки', perM2: 0, days: 0 },
+    { id: 'pre', name: 'Под чистовую', desc: 'Стены и полы готовы к финишу', perM2: 12000, days: 0.2 },
+    { id: 'key', name: 'Под ключ', desc: 'Имитация бруса, шпунтованный пол, сантехника, двери', perM2: 24000, days: 0.5 }
+  ],
+  // Доп. опции. sizes: числа × perUnit, либо готовые пары {label, price}. def — индекс размера по умолчанию.
+  options: [
+    { id: 'terrace', name: 'Терраса', desc: 'Крытая, на общем фундаменте', perUnit: 22000, unit: 'м²', sizes: [14, 20, 27], def: 0, days: 4 },   // примерная
+    { id: 'garage', name: 'Гараж', desc: 'Сэндвич-панели, плита, кровля, дверь, окно. Ворота отдельно', def: 0, days: 10,
+      sizes: [ { label: '6×6 м', price: 990000 }, { label: '6×7 м', price: 1090000 }, { label: '7×7 м', price: 1193000 }, { label: '7×8 м', price: 1346000 } ] }, // РЕАЛЬНЫЕ (пост VK, осень 2025)
+    { id: 'septic', name: 'Септик под ключ', desc: 'Новый металл 3 мм, утепление, доставка, яма, установка', def: 1, days: 2,
+      sizes: [ { label: '6 м³', price: 137500 }, { label: '8 м³', price: 171000 }, { label: '10 м³', price: 202000 }, { label: '12 м³', price: 227000 } ] },      // РЕАЛЬНЫЕ (2ГИС: ёмкость + установка)
+    { id: 'fence', name: 'Забор', desc: 'Профлист, под ключ с установкой', perUnit: 3500, unit: 'м', sizes: [40, 60, 100], def: 1, days: 2 },     // РЕАЛЬНАЯ: от 3 500 ₽/п.м (2ГИС)
+    { id: 'electric', name: 'Электрика', desc: 'Разводка, щит, розетки и свет', perM2: 3200, days: 0 },   // примерная
+    { id: 'heating', name: 'Отопление', desc: 'Котёл, радиаторы, разводка', perM2: 5500, days: 0 }         // примерная
+  ],
+  prepDays: 25,                                 // проект, смета, изготовление домокомплекта — примерно
+
+  // Конструктор планировки. Считает по тем же ставкам, что быстрый расчёт, но от реального плана.
+  // Все числа ПРИМЕРНЫЕ и подобраны так, чтобы типовая планировка давала ту же сумму, что быстрый расчёт:
+  // 76 м² ≈ 8 окон + входная + 5 межкомнатных ≈ 76 × openingsPerM2.
+  plan: {
+    window: 55000,          // окно с монтажом, ₽/шт — примерная
+    entranceDoor: 80000,    // входная дверь, ₽/шт — примерная
+    innerDoor: 17000,       // межкомнатная дверь, ₽/шт — примерная
+    outerShare: 0.35,       // доля наружных стен в цене домокомплекта (меняется с периметром)
+    innerShare: 0.12,       // доля перегородок в цене домокомплекта (меняется с их длиной)
+    partPerM2: 0.27,        // метров перегородок на 1 м² этажа в типовом доме
+    kMin: 0.85, kMax: 1.35  // пределы поправки к домокомплекту
+  },
+
+  // Проекты из постов VK: кнопка «Посчитать такой» подставляет параметры в калькулятор
+  projects: [
+    { name: 'Барнхаус 6×9', meta: '54 м² · каркасные панели', text: 'Большие окна и много света, внутри — имитация бруса нашего производства.', fact: 'Готовый домокомплект был в наличии за 1 356 000 ₽ (осень 2025)',
+      link: 'https://vk.ru/wall-211447172_1133', set: { tech: 'frame', dims: [9, 6], area: 54, floors: '1', foundation: 'screw', roofShape: 'gable', wall: 'plus' } },
+    { name: 'Дом 8×9,5', meta: '76 м² · каркасные панели', text: 'Один из самых популярных проектов: за сезон построили два, один — в Хатассах.', fact: 'Одобрен банком для ипотеки',
+      link: 'https://vk.ru/wall-211447172_1273', set: { tech: 'frame', dims: [9.5, 8], area: 76, floors: '1', foundation: 'rcpad', roofShape: 'gable', wall: 'plus' } },
+    { name: '«Олёкма»', meta: '57 м² + терраса 14 м²', text: '2 спальни, санузел. Каркасно-панельный домокомплект, фасад из имитации бруса.', fact: 'Ленточный фундамент',
+      link: 'https://vk.ru/wall-211447172_1259', set: { tech: 'frame', dims: [8, 7], area: 57, floors: '1', foundation: 'strip', roofShape: 'gable', wall: 'plus', opts: { terrace: 0 } } },
+    { name: 'Дом 9×8 с террасой 3×9', meta: '72 м² + терраса 27 м²', text: 'На регулируемых железобетонных опорах — фундамент собрали за один рабочий день.', fact: 'Наша разработка фундамента',
+      link: 'https://vk.ru/wall-211447172_1161', set: { tech: 'frame', dims: [9, 8], area: 72, floors: '1', foundation: 'rcpad', roofShape: 'gable', wall: 'plus', opts: { terrace: 2 } } },
+    { name: 'Двухэтажный 7×7 с гаражом', meta: '98 м² · 2 этажа · гараж 7×7', text: 'Двухэтажный домокомплект и пристроенный гараж из каркасных панелей.', fact: 'Домокомплект со сборкой — от 2,2 млн ₽ (сентябрь 2025)',
+      link: 'https://vk.ru/wall-211447172_1086', set: { tech: 'frame', dims: [7, 7], area: 98, floors: '2', foundation: 'rcpad', roofShape: 'gable', wall: 'std', opts: { garage: 2 } } },
+    { name: 'Дом из профбруса с гаражом', meta: '2 этажа · профилированный брус', text: 'Один из самых красивых наших домов. Площадь в посте не указана — в расчёте взяли 120 м².', fact: 'Брус нашего производства',
+      link: 'https://vk.ru/wall-211447172_1243', set: { tech: 'timber', dims: [8, 7.5], area: 120, floors: '2', foundation: 'strip', roofShape: 'gable', wall: 'plus', opts: { garage: 0 } } }
+  ]
+};
+
+/* ============================ Состояние ============================ */
+const state = {
+  tech: 'frame', wall: 'plus', area: CONFIG.area.def, floors: '1', foundation: 'rcpad',
+  roofShape: 'gable', roofMat: 'metal', finish: 'pre',
+  options: { terrace: false, garage: false, septic: false, fence: false, electric: true, heating: true },
+  optSize: {}, contact: 'Звонок',
+  mode: 'quick',        // 'quick' — быстрый расчёт, 'plan' — конструктор планировки
+  plan: null            // планировка первого этажа (см. planner.js)
+};
+const DRAFT_KEY = 'ecostroy.draft.v2';
+const planOn = () => state.mode === 'plan' && !!state.plan;
+CONFIG.options.forEach(o => { if (o.sizes) state.optSize[o.id] = o.def || 0; });
+const optSize = o => { const z = o.sizes[state.optSize[o.id]]; return typeof z === 'number' ? { label: z + ' ' + o.unit, price: z * o.perUnit, n: z } : z; };
+const curWall = () => { const t = pick('tech', state.tech); return t.walls.find(w => w.id === state.wall) || t.walls[0]; };
+const $ = s => document.querySelector(s);
+const pick = (group, id) => CONFIG[group].find(x => x.id === id);
+const nf = new Intl.NumberFormat('ru-RU');
+const rub = n => nf.format(Math.round(n / 1000) * 1000) + ' ₽';
+const mln = n => (Math.round(n / 100000) / 10).toLocaleString('ru-RU', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const fmtM = v => String(Math.round(v * 10) / 10).replace('.', ',');
+const telPretty = p => p.replace(/^\+?7(\d{3})(\d{3})(\d{2})(\d{2})$/, '+7 $1 $2-$3-$4');
+
+/* ============================== Расчёт ============================== */
+function calc() {
+  const t = pick('tech', state.tech), w = curWall(), fl = pick('floors', state.floors), f = pick('foundation', state.foundation);
+  const rs = pick('roofShape', state.roofShape), rm = pick('roofMat', state.roofMat), fin = pick('finish', state.finish);
+  const pm = planOn() ? Planner.metrics(state.plan) : null, PC = CONFIG.plan;
+  const foot = pm ? pm.foot : state.area / fl.div, A = pm ? foot * fl.div : state.area;
+  let geomK = 1, openRow = { k: 'Окна и входная дверь', d: '', v: A * CONFIG.openingsPerM2 };
+  if (pm) {
+    // поправка к домокомплекту: больше периметр и перегородок, чем в типовом доме той же площади, — дороже
+    const perTyp = 4.025 * Math.sqrt(foot), partTyp = PC.partPerM2 * foot;
+    geomK = Math.max(PC.kMin, Math.min(PC.kMax, 1 + PC.outerShare * (pm.per / perTyp - 1) + PC.innerShare * (pm.part / partTyp - 1)));
+    const up = fl.div > 1, win = Math.round(pm.win * fl.div), inner = Math.round(pm.inner * fl.div);
+    openRow = { k: 'Окна и двери', d: 'окон ' + win + ', входных ' + pm.ent + ', межкомнатных ' + inner + (up ? ' (с верхним этажом)' : ''),
+                v: win * PC.window + pm.ent * PC.entranceDoor + inner * PC.innerDoor };
+  }
+  const rows = [
+    { k: 'Домокомплект', d: t.name + ', ' + w.name.toLowerCase() + (pm ? '; наружные стены ' + fmtM(pm.per) + ' м, перегородки ' + fmtM(pm.part) + ' м' : ''), v: A * (t.kit + w.perM2) * fl.boxK * geomK },
+    { k: 'Сборка и перекрытия', d: fl.name, v: A * t.build },
+    openRow,
+    { k: 'Фундамент', d: f.name, v: foot * f.perM2 },
+    { k: 'Кровля', d: rs.name + ', ' + rm.name.toLowerCase(), v: foot * rs.k * rm.perM2 },
+    { k: 'Отделка', d: fin.name, v: A * fin.perM2 }
+  ];
+  let days = CONFIG.prepDays + f.days + A * t.days * fl.timeK + A * fin.days;
+  if (pm && pm.terrace) {
+    const o = CONFIG.options.find(x => x.id === 'terrace');
+    rows.push({ k: o.name, d: fmtM(state.plan.terrace.len) + '×' + fmtM(state.plan.terrace.dep) + ' м', v: pm.terrace * o.perUnit, extra: true });
+    days += o.days || 0;
+  }
+  CONFIG.options.forEach(o => {
+    if (!state.options[o.id] || (pm && o.id === 'terrace')) return;
+    let v, d = '';
+    if (o.sizes) { const z = optSize(o); v = z.price; d = z.label; } else v = A * o.perM2;
+    rows.push({ k: o.name, d, v, extra: true });
+    days += o.days || 0;
+  });
+  const sum = rows.reduce((s, r) => s + r.v, 0);
+  const m = Math.max(1, Math.round(days / 30));
+  return { rows, sum, low: sum * CONFIG.range.low, high: sum * CONFIG.range.high,
+           days, months: [m, m + 1], perM2: sum / A, foot, area: A, pm, warn: f.notFor.includes(state.tech) ? f : null };
+}
+
+/* ======================= Рисунок дома (SVG) ======================= */
+function drawHouse(c) {
+  const W = 420, G = 200;                              // ширина холста, уровень земли
+  const tech = state.tech, piles = state.foundation === 'rcpad' || state.foundation === 'screw';
+  const terraceArea = optSize(CONFIG.options.find(o => o.id === 'terrace')).n;
+  const two = state.floors === '2', attic = state.floors === '1.5';
+  const bw = Math.round(Math.max(120, Math.min(220, 120 + (c.foot - 25) / 275 * 150)));
+  const tw = state.options.terrace ? 40 + terraceArea * 1.5 : 0;
+  const gw = state.options.garage ? 82 : 0;
+  const x = Math.round((W - (tw + bw + gw)) / 2 + tw);  // левый край дома
+  const base = piles ? G - 12 : G - 6;                 // низ стен
+  const sh = 46, bh = (two ? 2 : 1) * sh, top = base - bh;
+  const wall = { frame: '#e3c79a', timber: '#c58a4e' }[tech];
+  const wallLine = { frame: '#c9a873', timber: '#9a6534' }[tech];
+  const roofC = pick('roofMat', state.roofMat).color;
+  let s = '';
+  s += '<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dcebf2"/><stop offset="1" stop-color="#f6f8f6"/></linearGradient>' +
+       '<clipPath id="wc"><rect x="' + x + '" y="' + top + '" width="' + bw + '" height="' + bh + '"/></clipPath></defs>';
+  s += '<rect width="420" height="230" rx="12" fill="url(#sky)"/>';
+  s += '<path d="M0 ' + (G + 2) + ' Q105 ' + (G - 6) + ' 210 ' + G + ' T420 ' + (G + 1) + ' V230 H0Z" fill="#fff"/>';
+  if (state.options.fence) { let fp = ''; for (let fx = 6; fx < 414; fx += 9) fp += '<rect x="' + fx + '" y="' + (G - 24) + '" width="7" height="26" fill="#8e9aa3"/>'; s += '<g opacity=".55">' + fp + '</g>'; }
+  // лиственницы
+  const tree = (tx, h) => '<path d="M' + tx + ' ' + (G - h) + 'l' + h * .22 + ' ' + h * .45 + 'h-' + h * .1 + 'l' + h * .16 + ' ' + h * .4 + 'h-' + h * .56 + 'l' + h * .16 + '-' + h * .4 + 'h-' + h * .1 + 'z" fill="#7fa493"/><rect x="' + (tx - 1.5) + '" y="' + (G - h * .15) + '" width="3" height="' + h * .17 + '" fill="#6b5a45"/>';
+  s += tree(22, 70) + tree(46, 46) + tree(398, 78);
+  // дым
+  if (state.options.heating) {
+    const cx = x + bw * .74;
+    const rt = top - (attic ? 44 : 26);
+    s += '<rect x="' + (cx - 6) + '" y="' + (rt - 18) + '" width="12" height="46" fill="#7d6a5d"/>' +
+         '<g fill="#fff" opacity=".9"><circle cx="' + (cx + 4) + '" cy="' + (rt - 28) + '" r="6"/><circle cx="' + (cx + 13) + '" cy="' + (rt - 40) + '" r="8"/><circle cx="' + (cx + 26) + '" cy="' + (rt - 54) + '" r="10"/></g>';
+  }
+  // фундамент
+  if (piles) {
+    const n = Math.max(3, Math.round(bw / 44));
+    for (let i = 0; i <= n; i++) {
+      const px = x + 5 + i * (bw - 16) / n;
+      s += state.foundation === 'screw' ? '<rect x="' + px + '" y="' + base + '" width="6" height="' + (G - base + 5) + '" fill="#7a8087"/>' : '<path d="M' + (px - 1) + ' ' + base + 'h8v' + (G - base - 4) + 'h4v7h-16v-7h4z" fill="#9aa0a6"/>';
+      if (state.foundation === 'screw') s += '<path d="M' + (px - 3) + ' ' + (G + 3) + 'h12" stroke="#7a8087" stroke-width="2"/>';
+    }
+    if (state.foundation !== 'screw') s += '<rect x="' + (x - 2) + '" y="' + (base - 1) + '" width="' + (bw + 4) + '" height="5" fill="#8d939a"/>';
+  } else {
+    s += state.foundation === 'slab' ? '<rect x="' + (x - 8) + '" y="' + base + '" width="' + (bw + 16) + '" height="7" rx="1" fill="#8d939a"/>' : '<rect x="' + x + '" y="' + base + '" width="' + bw + '" height="8" fill="#8d939a"/>';
+  }
+  // стены
+  s += '<rect x="' + x + '" y="' + top + '" width="' + bw + '" height="' + bh + '" fill="' + wall + '"/>';
+  let pat = '';
+  const stepY = tech === 'timber' ? 9.2 : 5.75;
+  for (let y = top + stepY; y < base - 1; y += stepY) pat += 'M' + x + ' ' + y + 'h' + bw;
+  s += '<path d="' + pat + '" stroke="' + wallLine + '" stroke-width="' + (tech === 'timber' ? 1.4 : .8) + '" fill="none" clip-path="url(#wc)"/>';
+  if (two) s += '<rect x="' + x + '" y="' + (top + sh - 1.5) + '" width="' + bw + '" height="3" fill="' + wallLine + '"/>';
+  // окна и дверь
+  const win = (wx, wy, ww, wh) => '<rect x="' + wx + '" y="' + wy + '" width="' + ww + '" height="' + wh + '" rx="1.5" fill="#bfe0ee" stroke="#fff" stroke-width="2.5"/><path d="M' + (wx + ww / 2) + ' ' + wy + 'v' + wh + '" stroke="#fff" stroke-width="1.6"/>';
+  const slots = bw > 175 ? 4 : 3, sw = bw / slots;
+  for (let fI = 0; fI < (two ? 2 : 1); fI++) {
+    const fy = base - sh * (fI + 1);
+    for (let i = 0; i < slots; i++) {
+      const cx = x + sw * i + sw / 2;
+      if (fI === 0 && i === 0) {
+        s += '<rect x="' + (cx - 9) + '" y="' + (base - 32) + '" width="18" height="32" rx="1.5" fill="#5a4636"/><circle cx="' + (cx + 5) + '" cy="' + (base - 15) + '" r="1.4" fill="#e39a2d"/>';
+        if (!state.options.terrace) s += '<path d="M' + (cx - 12) + ' ' + base + 'h24v' + (G - base) / 2 + 'h6v' + (G - base) / 2 + 'h-36v-' + (G - base) / 2 + 'h6z" fill="#a9977f"/>';
+      } else s += win(cx - 11, fy + 11, 22, 22);
+    }
+  }
+  // крыша
+  const ov = 10, rh = attic ? 58 : 34, L = x - ov, R = x + bw + ov, M = x + bw / 2;
+  if (state.roofShape === 'gable') {
+    s += '<path d="M' + L + ' ' + top + 'L' + M + ' ' + (top - rh) + 'L' + R + ' ' + top + 'Z" fill="' + roofC + '"/>';
+    if (attic) s += win(M - 11, top - 30, 22, 20);
+  } else if (state.roofShape === 'shed') {
+    const hL = attic ? 52 : 30, hR = attic ? 20 : 8;
+    s += '<path d="M' + x + ' ' + top + 'V' + (top - hL + 4) + 'L' + (x + bw) + ' ' + (top - hR + 2) + 'V' + top + 'Z" fill="' + wall + '"/>' +
+         '<path d="M' + L + ' ' + (top - hL + 3) + 'L' + R + ' ' + (top - hR - 1) + 'v8L' + L + ' ' + (top - hL + 11) + 'Z" fill="' + roofC + '"/>';
+    if (attic) s += win(x + bw * .22, top - 26, 22, 18);
+  } else {
+    const tq = bw * .24;
+    s += '<path d="M' + L + ' ' + top + 'L' + (M - tq) + ' ' + (top - rh) + 'H' + (M + tq) + 'L' + R + ' ' + top + 'Z" fill="' + roofC + '"/>';
+    if (attic) s += '<path d="M' + (M - 18) + ' ' + (top - 8) + 'v-22l18-10 18 10v22z" fill="' + wall + '"/>' + win(M - 9, top - 28, 18, 18) + '<path d="M' + (M - 22) + ' ' + (top - 28) + 'l22-13 22 13" fill="none" stroke="' + roofC + '" stroke-width="5" stroke-linejoin="round"/>';
+  }
+  s += '<path d="M' + L + ' ' + top + 'H' + R + '" stroke="rgba(0,0,0,.18)" stroke-width="2"/>';
+  // терраса
+  if (state.options.terrace) {
+    const tx = x - tw;
+    s += '<rect x="' + tx + '" y="' + (base - 2) + '" width="' + tw + '" height="5" fill="#a9825a"/>';
+    for (let i = 0; i < 3; i++) s += '<rect x="' + (tx + 3 + i * (tw - 10) / 2) + '" y="' + (base + 3) + '" width="4" height="' + (G - base) + '" fill="#7a8087"/>';
+    s += '<path d="M' + (tx + 3) + ' ' + (base - 2) + 'v-40M' + (tx + tw / 2) + ' ' + (base - 2) + 'v-41" stroke="#8a6a48" stroke-width="3.5"/>' +
+         '<path d="M' + (tx - 6) + ' ' + (base - 40) + 'L' + x + ' ' + (base - 47) + 'v5L' + (tx - 6) + ' ' + (base - 35) + 'Z" fill="' + roofC + '"/>' +
+         '<path d="M' + (tx + 3) + ' ' + (base - 16) + 'H' + (x - 20) + '" stroke="#8a6a48" stroke-width="2.5"/>';
+    for (let rx = tx + 9; rx < x - 22; rx += 7) s += '<path d="M' + rx + ' ' + (base - 16) + 'v14" stroke="#8a6a48" stroke-width="1.3"/>';
+  }
+  // гараж
+  if (state.options.garage) {
+    const gx = x + bw, gh = 50, gy = G - 3 - gh;
+    s += '<rect x="' + gx + '" y="' + (G - 4) + '" width="' + (gw + 4) + '" height="5" fill="#8d939a"/>' +
+         '<rect x="' + gx + '" y="' + gy + '" width="' + gw + '" height="' + gh + '" fill="' + wall + '"/>' +
+         '<path d="M' + (gx - 1) + ' ' + (gy - 8) + 'L' + (gx + gw + 8) + ' ' + (gy - 2) + 'v7L' + (gx - 1) + ' ' + (gy - 1) + 'Z" fill="' + roofC + '"/>' +
+         '<rect x="' + (gx + 13) + '" y="' + (gy + 12) + '" width="' + (gw - 26) + '" height="' + (gh - 12) + '" fill="#f4f4f1" stroke="#b9b6ad" stroke-width="1.5"/>';
+    for (let y = gy + 20; y < G - 6; y += 8) s += '<path d="M' + (gx + 13) + ' ' + y + 'h' + (gw - 26) + '" stroke="#cfccc3" stroke-width="1"/>';
+  }
+  // септик
+  if (state.options.septic) {
+    const sx = Math.max(64, x - tw - 34);
+    s += '<ellipse cx="' + sx + '" cy="' + (G + 9) + '" rx="13" ry="4" fill="#3f6f5c"/><ellipse cx="' + sx + '" cy="' + (G + 8) + '" rx="9" ry="2.6" fill="#5c9580"/>';
+  }
+  $('#house').innerHTML = s;
+  $('#houseCap').textContent = pick('tech', state.tech).name + ' · ' + state.area + ' м² · ' + pick('floors', state.floors).name.toLowerCase();
+}
+
+/* ============================== Вывод ============================== */
+function summaryText(c) {
+  const lines = ['Расчёт дома — ' + CONFIG.company.name, ''];
+  lines.push('Площадь: ' + fmtM(c.area) + ' м², ' + pick('floors', state.floors).name.toLowerCase());
+  if (c.pm) Planner.describe(state.plan, pick('floors', state.floors).name).forEach(l => lines.push(l));
+  c.rows.forEach(r => lines.push(r.k + (r.d ? ' (' + r.d + ')' : '') + ': ' + rub(r.v)));
+  lines.push('', 'Итого примерно: ' + mln(c.low) + '–' + mln(c.high) + ' млн ₽', 'Срок: ' + c.months[0] + '–' + c.months[1] + ' мес.');
+  return lines.join('\n');
+}
+function render(live) {
+  if (planOn()) state.area = Math.round(state.plan.w * state.plan.d * pick('floors', state.floors).div);
+  const c = calc();
+  document.querySelectorAll('[data-group]').forEach(g => g.querySelectorAll('.opt').forEach(b => b.setAttribute('aria-pressed', String(state[g.dataset.group] === b.dataset.id))));
+  document.querySelectorAll('#extras .opt').forEach(b => b.setAttribute('aria-pressed', String(!!state.options[b.dataset.id])));
+  const t = pick('tech', state.tech), cw = curWall();
+  $('#wallOpts').innerHTML = t.walls.map(o => '<button type="button" class="opt" data-id="' + o.id + '" aria-pressed="' + (o.id === cw.id) + '"><b>' + o.name + '</b><small>' + o.desc + '</small><em>' + (o.perM2 ? '+ ' + nf.format(o.perM2) + ' ₽/м²' : 'в базовой цене') + '</em></button>').join('');
+  document.querySelectorAll('#optSubs .sub').forEach(d => {
+    d.hidden = !state.options[d.dataset.id];
+    d.querySelectorAll('.chip').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.i === state.optSize[d.dataset.id])));
+  });
+  document.querySelectorAll('#areaChips .chip').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.v === state.area)));
+  const an = $('#areaNum'); if (document.activeElement !== an) an.value = state.area; $('#areaRange').value = state.area;
+  const w = $('#foundWarn');
+  w.hidden = !c.warn;
+  if (c.warn) w.textContent = '«' + c.warn.name + '» обычно не ставят под тяжёлые стены из газобетона. Расчёт оставили, но советуем ж/б сваи или плиту — уточним после геологии.';
+  const range = mln(c.low) + ' – ' + mln(c.high) + ' млн ₽', time = c.months[0] + '–' + c.months[1] + ' мес.';
+  $('#totalRange').innerHTML = range + '<small>расчётная сумма ' + rub(c.sum) + '</small>';
+  $('#kpiTime').textContent = '≈ ' + time;
+  $('#kpiM2').textContent = '≈ ' + rub(c.perM2);
+  $('#rows').innerHTML = c.rows.map(r => '<li><div class="r"><span>' + r.k + (r.d ? '<small>' + r.d + '</small>' : '') + '</span><b>' + (r.v ? rub(r.v) : '—') + '</b></div><div class="bar"><u style="width:' + (r.v / c.sum * 100).toFixed(1) + '%"></u></div></li>').join('');
+  $('#dockTotal').textContent = range;
+  $('#dockSub').textContent = fmtM(c.area) + ' м² · срок ≈ ' + time + ' · цены примерные';
+  const mini = $('#leadMini');
+  if (mini) mini.textContent = pick('tech', state.tech).name + ', ' + fmtM(c.area) + ' м², ' + pick('floors', state.floors).name.toLowerCase() + (c.pm ? ', своя планировка: комнат ' + c.pm.rooms.length + ', окон ' + c.pm.win : '') + ' — ' + range + ', ≈ ' + time;
+  const p = (state.area - CONFIG.area.min) / (CONFIG.area.max - CONFIG.area.min) * 100;
+  $('#areaRange').style.setProperty('--p', p + '%');
+  const plan = planOn();
+  document.body.classList.toggle('mode-plan', plan);
+  $('#stepPlan').hidden = !plan;
+  document.querySelectorAll('#modes button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === (plan ? 'plan' : 'quick'))));
+  if (plan) {
+    Planner.drawIso($('#house'));
+    $('#houseCap').textContent = '3D-вид: ' + fmtM(state.plan.w) + '×' + fmtM(state.plan.d) + ' м, ' + pick('floors', state.floors).name.toLowerCase();
+    Planner.refresh();
+  } else drawHouse(c);
+  if (!live) saveDraft();
+  return c;
+}
+
+/* ================= Режимы: быстрый расчёт ↔ конструктор ================= */
+function terraceArea() { const o = CONFIG.options.find(x => x.id === 'terrace'); return state.options.terrace ? optSize(o).n : 0; }
+function newPlanFromCalc() { return Planner.fromArea(state.area / pick('floors', state.floors).div, { terrace: terraceArea() }); }
+function setMode(m, fresh) {
+  const A = CONFIG.area;
+  if (m === 'plan') {
+    const div = pick('floors', state.floors).div;
+    Planner.notice('');
+    if (!state.plan) { Planner.setPlan(newPlanFromCalc(), true); }
+    else if (!fresh && state.mode !== 'plan') {
+      const pa = Math.round(state.plan.w * state.plan.d * div), want = state.area;
+      if (Math.abs(pa - want) > 2) {
+        if (state.plan.auto) Planner.setPlan(newPlanFromCalc(), true);      // планировку не трогали — просто подгоняем под новую площадь
+        else Planner.notice('В быстром расчёте площадь ' + want + ' м², а в вашей планировке ' + pa + ' м². Планировку оставили как была.', 'Сделать ' + want + ' м²',
+          () => { const p = Planner.fromArea(want / div, { terrace: terraceArea() }); p.auto = false; Planner.setPlan(p); render(); });
+      }
+    }
+    state.mode = 'plan'; Planner.open();
+  } else {
+    if (state.plan && state.mode === 'plan') {                               // переносим площадь и террасу обратно в калькулятор
+      state.area = Math.max(A.min, Math.min(A.max, Math.round(state.plan.w * state.plan.d * pick('floors', state.floors).div)));
+      const o = CONFIG.options.find(x => x.id === 'terrace'), t = state.plan.terrace;
+      state.options.terrace = !!t;
+      if (t) { let bi = 0; o.sizes.forEach((z, i) => { if (Math.abs(z - t.len * t.dep) < Math.abs(o.sizes[bi] - t.len * t.dep)) bi = i; }); state.optSize.terrace = bi; }
+    }
+    state.mode = 'quick';
+  }
+  render();
+}
+function saveDraft() { try { localStorage.setItem(DRAFT_KEY, JSON.stringify(state)); } catch (e) {} }
+function loadDraft() {
+  try {
+    const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); if (!d) return;
+    ['tech', 'floors', 'foundation', 'roofShape', 'roofMat', 'finish'].forEach(k => { if (CONFIG[k].some(x => x.id === d[k])) state[k] = d[k]; });
+    if (d.wall === 'std' || d.wall === 'plus') state.wall = d.wall;
+    if (d.area >= CONFIG.area.min && d.area <= CONFIG.area.max) state.area = Math.round(d.area);
+    CONFIG.options.forEach(o => {
+      if (d.options && typeof d.options[o.id] === 'boolean') state.options[o.id] = d.options[o.id];
+      if (o.sizes && d.optSize && o.sizes[d.optSize[o.id]] !== undefined) state.optSize[o.id] = d.optSize[o.id];
+    });
+    if (Planner.valid(d.plan)) { state.plan = Planner.sanitize(d.plan); if (d.mode === 'plan') state.mode = 'plan'; }
+  } catch (e) {}
+}
+
+/* ====================== Сборка интерфейса ====================== */
+function priceHint(group, o) {
+  if (group === 'tech') return 'домокомплект от ' + nf.format(o.kit) + ' ₽/м²';
+  if (group === 'foundation') return '≈ ' + nf.format(o.perM2) + ' ₽/м² основания';
+  if (group === 'roofMat') return '≈ ' + nf.format(o.perM2) + ' ₽/м² кровли';
+  if (group === 'finish') return o.perM2 ? '+ ' + nf.format(o.perM2) + ' ₽/м²' : 'в базовой цене';
+  return '';
+}
+function build() {
+  document.querySelectorAll('[data-group]').forEach(g => {
+    const group = g.dataset.group;
+    g.innerHTML = CONFIG[group].map(o => '<button type="button" class="opt" data-id="' + o.id + '"><b>' + o.name + '</b>' + (o.desc ? '<small>' + o.desc + '</small>' : '') + (priceHint(group, o) ? '<em>' + priceHint(group, o) + '</em>' : '') + '</button>').join('');
+    g.addEventListener('click', e => { const b = e.target.closest('.opt'); if (!b) return; state[group] = b.dataset.id; render(); });
+  });
+  $('#extras').innerHTML = CONFIG.options.map(o => {
+    const z = o.sizes ? o.sizes.map(x => typeof x === 'number' ? x * o.perUnit : x.price) : null;
+    const p = o.perUnit ? '≈ ' + nf.format(o.perUnit) + ' ₽ за ' + o.unit : z ? 'от ' + nf.format(Math.min.apply(null, z)) + ' ₽' : '+ ' + nf.format(o.perM2) + ' ₽/м²';
+    return '<button type="button" class="opt" data-id="' + o.id + '"><b>' + o.name + '</b><small>' + o.desc + '</small><em>' + p + '</em></button>';
+  }).join('');
+  $('#extras').addEventListener('click', e => { const b = e.target.closest('.opt'); if (!b) return; state.options[b.dataset.id] = !state.options[b.dataset.id]; render(); });
+  $('#optSubs').innerHTML = CONFIG.options.filter(o => o.sizes).map(o => '<div class="sub" data-id="' + o.id + '" hidden><p>' + o.name + ': размер</p><div class="chips">' +
+    o.sizes.map((x, i) => '<button type="button" class="chip" data-i="' + i + '">' + (typeof x === 'number' ? x + ' ' + o.unit : x.label) + '</button>').join('') + '</div></div>').join('');
+  $('#optSubs').addEventListener('click', e => { const b = e.target.closest('.chip'); if (!b) return; state.optSize[b.closest('.sub').dataset.id] = +b.dataset.i; render(); });
+  $('#wallOpts').addEventListener('click', e => { const b = e.target.closest('.opt'); if (!b) return; state.wall = b.dataset.id; render(); });
+  $('#areaChips').innerHTML = CONFIG.area.popular.map(v => '<button type="button" class="chip" data-v="' + v + '">' + v + ' м²</button>').join('');
+  $('#areaChips').addEventListener('click', e => { const b = e.target.closest('.chip'); if (!b) return; state.area = +b.dataset.v; render(); });
+  $('#projGrid').innerHTML = CONFIG.projects.map((p, i) => '<div class="card"><b>' + p.name + '</b><span class="meta">' + p.meta + '</span><p>' + p.text + '</p><span class="fact">' + p.fact + '</span><span class="pp" data-pp="' + i + '"></span>' +
+    '<button type="button" class="btn" data-proj="' + i + '">Посчитать такой</button><button type="button" class="btn ghost" data-projplan="' + i + '">Изменить планировку</button><a class="src" href="' + p.link + '" target="_blank" rel="noopener">Пост во ВКонтакте</a></div>').join('');
+  $('#projGrid').addEventListener('click', e => {
+    const b = e.target.closest('[data-proj]'), bp = e.target.closest('[data-projplan]');
+    if (b) { applyProject(CONFIG.projects[+b.dataset.proj]); setMode('quick'); }
+    else if (bp) {                                   // проект открывается в конструкторе со своей планировкой
+      const p = CONFIG.projects[+bp.dataset.projplan];
+      applyProject(p);
+      Planner.setPlan(Planner.template(p.set.dims[0], p.set.dims[1], { terrace: terraceArea() }), true);
+      setMode('plan', true);
+    } else return;
+    $('#calc').scrollIntoView({ block: 'start' });
+  });
+  document.addEventListener('click', e => { const b = e.target.closest('[data-mode]'); if (!b) return; setMode(b.dataset.mode); if (b.classList.contains('to-plan') || b.classList.contains('pl-back')) $('#calc').scrollIntoView({ block: 'start' }); });
+  CONFIG.projects.forEach((p, i) => {            // цена карточки считается тем же калькулятором
+    const keep = JSON.stringify(state); applyProject(p); state.mode = 'quick'; const c = calc(); Object.assign(state, JSON.parse(keep));
+    document.querySelector('[data-pp="' + i + '"]').textContent = 'В калькуляторе: ' + mln(c.low) + ' – ' + mln(c.high) + ' млн ₽';
+  });
+
+  const A = CONFIG.area, rng = $('#areaRange'), num = $('#areaNum');
+  [rng, num].forEach(i => { i.min = A.min; i.max = A.max; i.step = A.step; i.value = state.area; });
+  num.step = 1;
+  $('#areaMin').textContent = A.min + ' м²'; $('#areaMax').textContent = A.max + ' м²';
+  const setArea = (v, from) => {
+    v = Math.round(Math.max(A.min, Math.min(A.max, +v || A.min)));
+    state.area = v; rng.value = v; if (from !== num) num.value = v; render();
+  };
+  rng.step = 1;
+  rng.addEventListener('input', () => setArea(rng.value, rng));
+  num.addEventListener('input', () => { const v = +num.value; if (v >= A.min && v <= A.max) setArea(v, num); });
+  num.addEventListener('change', () => setArea(num.value));
+  $('#areaMinus').addEventListener('click', () => setArea(state.area - A.step));
+  $('#areaPlus').addEventListener('click', () => setArea(state.area + A.step));
+
+  const co = CONFIG.company, tel = 'tel:' + co.phone, wa = 'https://wa.me/' + co.whatsapp;
+  $('#callTop').href = tel; $('#callNum').textContent = telPretty(co.phone);
+  $('#cName').textContent = co.name; $('#cAddr').textContent = co.address; $('#cHours').textContent = co.hours;
+  $('#cPhone').href = tel; $('#cPhone').textContent = telPretty(co.phone);
+  $('#cWa').href = wa; $('#cWa').textContent = telPretty('+' + co.whatsapp);
+  $('#cMail').href = 'mailto:' + co.email; $('#cMail').textContent = co.email;
+  $('#cCall').href = tel; $('#cWaBtn').href = wa; $('#cVk').href = co.vk; $('#cGis').href = co.gis; $('#cTg').href = co.tg;
+  $('#priceNote').textContent = CONFIG.priceNote;
+
+  $('#contactChips').addEventListener('click', e => {
+    const b = e.target.closest('.chip'); if (!b) return; state.contact = b.dataset.v;
+    document.querySelectorAll('#contactChips .chip').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  });
+  $('#leadForm').addEventListener('submit', onSubmit);
+}
+
+function applyProject(p) {
+  const st = p.set;
+  if (state.mode === 'plan') state.mode = 'quick';
+  ['tech', 'area', 'floors', 'foundation', 'roofShape', 'wall'].forEach(k => { if (st[k] !== undefined) state[k] = st[k]; });
+  CONFIG.options.forEach(o => { if (o.sizes) state.options[o.id] = false; });
+  Object.keys(st.opts || {}).forEach(id => { state.options[id] = true; state.optSize[id] = st.opts[id]; });
+}
+
+/* ============================ Заявка ============================ */
+const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+function onSubmit(e) {
+  e.preventDefault();
+  const name = $('#fName').value.trim(), phone = $('#fPhone').value.trim(), msg = $('#fMsg').value.trim();
+  if (phone.replace(/\D/g, '').length < 10) { $('#fErr').textContent = 'Укажите телефон — хотя бы 10 цифр.'; $('#fPhone').focus(); return; }
+  const c = calc();
+  const text = summaryText(c) + '\n\nИмя: ' + (name || 'не указано') + '\nТелефон: ' + phone + '\nСвязь: ' + state.contact + (msg ? '\nКомментарий: ' + msg : '');
+  const box = $('#leadBox');
+  box.classList.add('done');
+  box.innerHTML = '<h3>Спасибо' + (name ? ', ' + esc(name) : '') + '!</h3><p>Мы собрали ваш расчёт. Это прототип — заявка пока никуда не ушла. Отправьте расчёт в WhatsApp, и менеджер ответит.</p><pre id="leadData">' + esc(text) + '</pre>' +
+    '<a class="btn green" id="waSend" target="_blank" rel="noopener" href="https://wa.me/' + CONFIG.company.whatsapp + '?text=' + encodeURIComponent(text) + '">Отправить расчёт в WhatsApp</a>' +
+    '<a class="btn ghost" href="#calc">Изменить расчёт</a>';
+  box.scrollIntoView({ block: 'start' });
+}
+
+loadDraft();
+build();
+Planner.init({ state, CONFIG, onChange: live => render(live) }, $('#planner'));
+if (state.mode === 'plan') Planner.open();
+render();
+</script>
+</body>
+</html>
