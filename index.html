@@ -1,6 +1,170 @@
-<!doctype html><html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ЭкостройИнвест — версии сайта</title>
-<body style="font-family:system-ui;background:#f4f2ee;color:#1b1b1b;padding:32px 16px;max-width:560px;margin:auto">
-<h1 style="color:#1f5c4a">ЭкостройИнвест — версии сайта</h1>
-<a href="v1/" style="display:block;background:#fff;border-radius:16px;padding:20px;margin:12px 0;text-decoration:none;color:inherit;border:1px solid #ddd"><b>Версия 1 — Быстрый калькулятор</b><br><span style="color:#666">Выбор параметров по шагам, цена и срок сразу</span></a>
-<a href="v2/" style="display:block;background:#fff;border-radius:16px;padding:20px;margin:12px 0;text-decoration:none;color:inherit;border:1px solid #ddd"><b>Версия 2 — Калькулятор + конструктор планировки</b><br><span style="color:#666">Клиент сам двигает стены, ставит окна и двери</span></a>
-</body></html>
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Сайт, который продаёт дома — три варианта для ЭкостройИнвест</title>
+<meta name="description" content="Три варианта сайта для застройщика: калькулятор, 3D-конструктор дома, эскизный проект и смета под ключ. Демо и цены.">
+<style>
+:root{--green:#1d5a47;--green-d:#143f32;--green-l:#e4efe9;--amber:#e39a2d;--amber-d:#b97614;
+--bg:#f4f2ec;--card:#fff;--ink:#1a2420;--mute:#5f6b66;--line:#dcd8cd;--warn-bg:#fff4dc;--warn:#7a5200;--r:18px}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;overflow-x:hidden}
+h1,h2,h3,p,ul{margin:0}
+a{color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+.top{background:var(--green);color:#fff;padding:26px 0 30px}
+.top small{display:block;opacity:.8;font-size:13px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px}
+.top h1{font-size:28px;line-height:1.12;max-width:760px}
+.top p{margin-top:10px;opacity:.92;max-width:680px}
+.top a{display:inline-flex;align-items:center;min-height:50px;margin-top:18px;background:var(--amber);color:#2a1c00;font-weight:700;border-radius:14px;padding:10px 20px;text-decoration:none}
+.grid{display:grid;gap:16px;margin:20px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;position:relative}
+.card.rec{border:3px solid var(--amber);box-shadow:0 10px 30px rgba(227,154,45,.22)}
+.rib{background:var(--amber);color:#2a1c00;font-weight:800;font-size:13px;letter-spacing:.05em;text-transform:uppercase;text-align:center;padding:7px 10px}
+.shot{display:block;aspect-ratio:16/10;background:#e9ece8;overflow:hidden;border-bottom:1px solid var(--line)}
+.shot img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+.body{padding:18px;display:flex;flex-direction:column;gap:12px;flex:1}
+.n{color:var(--green);font-weight:700;font-size:13px;letter-spacing:.05em;text-transform:uppercase}
+.card h2{font-size:22px;line-height:1.2}
+.for{color:var(--mute)}
+.card ul{list-style:none;padding:0;display:grid;gap:7px}
+.card li{padding-left:26px;position:relative;font-size:15px}
+.card li::before{content:"";position:absolute;left:0;top:3px;width:18px;height:18px;border-radius:50%;background:var(--green-l) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 10.5l3.2 3.2L15 7' fill='none' stroke='%231d5a47' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/14px no-repeat}
+.inc{font-size:13px;color:var(--green);font-weight:600}
+.price{margin-top:auto;background:var(--bg);border-radius:14px;padding:14px}
+.price span{display:block;color:var(--mute);font-size:13px}
+.price b{display:block;font-size:30px;line-height:1.15;white-space:nowrap}
+.price em{font-style:normal;display:block;margin-top:6px;font-weight:600}
+.price i{font-style:normal;display:block;color:var(--mute);font-size:13px;margin-top:2px}
+.btn{display:flex;align-items:center;justify-content:center;min-height:54px;border-radius:14px;background:var(--green);color:#fff;font-weight:700;font-size:17px;text-decoration:none;padding:10px 16px}
+.rec .btn{background:var(--amber);color:#2a1c00}
+.box{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px;margin:16px 0}
+.box h2{font-size:21px;margin-bottom:8px}
+.pilot{background:var(--green);color:#fff;border:0}
+.pilot .big{font-size:32px;font-weight:800;line-height:1.15;margin:6px 0}
+.pilot s{opacity:.65;font-weight:400;font-size:20px;margin-left:8px;white-space:nowrap}
+.pilot p{opacity:.95}
+.tbl{width:100%;border-collapse:collapse;font-size:15px}
+.tbl th,.tbl td{text-align:left;padding:10px 8px;border-top:1px solid var(--line);vertical-align:top}
+.tbl th{color:var(--mute);font-weight:600;font-size:13px;border-top:0}
+.tbl td b{white-space:nowrap}
+.tbl tr.r td{background:var(--warn-bg)}
+.fine{color:var(--mute);font-size:13px;padding:6px 0 40px}
+.fine p{margin-top:8px}
+@media(max-width:560px){
+ .tbl thead{display:none}
+ .tbl tr{display:block;border-top:1px solid var(--line);padding:10px 0}
+ .tbl tr.r{padding:10px;border-radius:12px;background:var(--warn-bg)}
+ .tbl td{display:block;border:0;padding:2px 0;background:none!important}
+ .tbl td:first-child{font-weight:700}
+ .tbl td[data-l]::before{content:attr(data-l) ": ";color:var(--mute)}
+}
+@media(min-width:900px){
+ .top{padding:44px 0 48px}
+ .top h1{font-size:44px}
+ .top p{font-size:18px}
+ .grid{grid-template-columns:repeat(3,1fr);align-items:stretch;gap:20px;margin:28px 0}
+ .two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+ .two .box{margin:0}
+ .box{padding:26px}
+}
+</style>
+</head>
+<body>
+<div class="top"><div class="wrap">
+  <small>Предложение для ЭкостройИнвест</small>
+  <h1>Сайт, который продаёт дома, пока вы на объекте</h1>
+  <p>Три варианта — от простого калькулятора до эскизного проекта со сметой. Каждый можно открыть и попробовать с телефона или компьютера.</p>
+  <a href="pitch/">Смотреть презентацию →</a>
+</div></div>
+
+<div class="wrap">
+  <div class="grid">
+
+    <article class="card">
+      <a class="shot" href="v1/"><img src="img/v1-d.jpg" alt="Скриншот: калькулятор стоимости дома" width="1280" height="800"></a>
+      <div class="body">
+        <p class="n">Вариант 1</p>
+        <h2>Калькулятор — лид-магнит</h2>
+        <p class="for">Чтобы клиент не уходил с сайта без цены, а оставлял заявку.</p>
+        <ul>
+          <li>Клиент за минуту выбирает дом и видит цену и срок</li>
+          <li>Заявка с готовым расчётом приходит в WhatsApp</li>
+          <li>Удобно с телефона, цены меняете сами</li>
+        </ul>
+        <div class="price"><span>Внедрение</span><b>25 000 ₽</b><em>Поддержка 2 500 ₽/мес</em></div>
+        <a class="btn" href="v1/">Открыть демо</a>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="shot" href="v2/"><img src="img/v2-d.jpg" alt="Скриншот: 3D-конструктор дома" width="1280" height="800"></a>
+      <div class="body">
+        <p class="n">Вариант 2</p>
+        <h2>3D-конструктор дома</h2>
+        <p class="for">Чтобы клиент сам собрал свой дом и привязался к нему.</p>
+        <ul>
+          <li>Клиент двигает стены, ставит окна, двери и комнаты</li>
+          <li>Дом сразу виден в 3D, его можно покрутить</li>
+          <li>Цена и срок считаются от планировки</li>
+        </ul>
+        <p class="inc">Включает вариант 1</p>
+        <div class="price"><span>Внедрение</span><b>90 000 ₽</b><em>Поддержка 7 000 ₽/мес</em></div>
+        <a class="btn" href="v2/">Открыть демо</a>
+      </div>
+    </article>
+
+    <article class="card rec">
+      <div class="rib">Рекомендуем · полная интеграция</div>
+      <a class="shot" href="v3/"><img src="img/v3-d.jpg" alt="Скриншот: эскизный проект и смета" width="1280" height="800"></a>
+      <div class="body">
+        <p class="n">Вариант 3</p>
+        <h2>Проект и смета под ключ</h2>
+        <p class="for">Чтобы клиент получил эскизный проект и смету за секунды, а не через несколько дней.</p>
+        <ul>
+          <li>Альбом PDF: планы, фасады, разрез, свайное поле</li>
+          <li>Смета по разделам по вашему прайсу, в Excel</li>
+          <li>3D-модель дома (IFC) для проектировщика</li>
+        </ul>
+        <p class="inc">Включает варианты 1 и 2</p>
+        <div class="price"><span>Внедрение</span><b>220 000 ₽</b><em>Поддержка 19 000 ₽/мес</em><i>до 50 проектов в месяц, сверх — 300 ₽ за проект</i></div>
+        <a class="btn" href="v3/">Открыть демо</a>
+      </div>
+    </article>
+
+  </div>
+
+  <div class="two">
+    <section class="box pilot">
+      <h2>Пилот для ЭкостройИнвест</h2>
+      <p>Вы — первый клиент. За отзыв и кейс:</p>
+      <p class="big">Вариант 3 за <span style="white-space:nowrap">150 000 ₽</span> <s>220 000 ₽</s></p>
+      <p>Первые 2 месяца поддержки — бесплатно.</p>
+    </section>
+    <section class="box">
+      <h2>Опция к варианту 3</h2>
+      <p>Инженерный расчёт и рабочий проект на конкретный дом — через инженера-партнёра, цена по проекту.</p>
+    </section>
+  </div>
+
+  <section class="box">
+    <h2>Цены одной таблицей</h2>
+    <table class="tbl">
+      <thead><tr><th>Вариант</th><th>Внедрение</th><th>Поддержка</th></tr></thead>
+      <tbody>
+        <tr><td>1. Калькулятор — лид-магнит</td><td data-l="Внедрение"><b>25 000 ₽</b></td><td data-l="Поддержка"><b>2 500 ₽/мес</b></td></tr>
+        <tr><td>2. 3D-конструктор (включает 1)</td><td data-l="Внедрение"><b>90 000 ₽</b></td><td data-l="Поддержка"><b>7 000 ₽/мес</b></td></tr>
+        <tr class="r"><td>3. Проект и смета под ключ (включает 1 и 2)</td><td data-l="Внедрение"><b>220 000 ₽</b></td><td data-l="Поддержка"><b>19 000 ₽/мес</b>, до 50 проектов в мес., сверх — 300 ₽/проект</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <div class="fine">
+    <p>Вариант 3 выдаёт эскизный проект: он показывает дом, планировку и стоимость. Сваи и фундамент на мерзлоте рассчитывает инженер — как указано в альбоме.</p>
+    <p>В демо цены домов примерные, смета варианта 3 — на демо-прайсе; в рабочей версии подставляется прайс ЭкостройИнвест.</p>
+  </div>
+</div>
+</body>
+</html>

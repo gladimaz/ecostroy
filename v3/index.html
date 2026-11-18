@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ЭкостройИнвест — проект и смета под ключ (демо)</title>
+<meta name="description" content="Задайте дом и получите эскизный проект: альбом чертежей, 3D-модель и смету по разделам.">
+<style>
+:root{--green:#1d5a47;--green-d:#143f32;--green-l:#e4efe9;--amber:#e39a2d;--amber-d:#b97614;
+--bg:#f4f2ec;--card:#fff;--ink:#1a2420;--mute:#5f6b66;--line:#dcd8cd;--warn-bg:#fff4dc;--warn:#7a5200;--r:16px}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;overflow-x:hidden}
+h1,h2,h3,p{margin:0}
+a{color:inherit}
+button{font:inherit;color:inherit;cursor:pointer}
+.wrap{max-width:1100px;margin:0 auto;padding:0 16px}
+header{background:var(--green);color:#fff}
+header .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px}
+header b{font-size:17px}
+header a{font-size:14px;opacity:.9;text-decoration:none;border:1px solid rgba(255,255,255,.4);border-radius:10px;padding:8px 12px;white-space:nowrap}
+.hero{padding:22px 0 6px}
+.tag{display:inline-block;background:var(--amber);color:#2a1c00;font-weight:700;font-size:12px;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;padding:4px 10px;margin-bottom:10px}
+.hero h1{font-size:26px;line-height:1.15}
+.hero p{color:var(--mute);margin-top:8px;max-width:720px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin:14px 0}
+.card h2{font-size:19px;margin-bottom:12px}
+.lbl{font-weight:600;margin:14px 0 8px;font-size:15px}
+.seg{display:grid;gap:8px;grid-template-columns:repeat(2,1fr)}
+.seg.three{grid-template-columns:repeat(3,1fr)}
+.seg button{min-height:54px;white-space:nowrap;border-radius:12px;border:2px solid var(--line);background:#fff;font-weight:600;padding:6px 8px;line-height:1.2}
+.seg button small{display:block;font-weight:400;color:var(--mute);font-size:12px}
+.seg button[aria-pressed=true]{border-color:var(--green);background:var(--green-l)}
+.from2{display:none;background:var(--green-l);border-radius:12px;padding:12px 14px;margin-bottom:6px;font-size:15px}
+.from2.on{display:block}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;min-height:56px;width:100%;border:0;border-radius:14px;background:var(--amber);color:#2a1c00;font-weight:700;font-size:17px;text-decoration:none;padding:10px 16px;text-align:center}
+.btn.green{background:var(--green);color:#fff}
+.btn.ghost{background:#fff;border:2px solid var(--green);color:var(--green)}
+.btn:active{transform:translateY(1px)}
+.fine{color:var(--mute);font-size:13px;margin-top:10px}
+.link{color:var(--green);font-weight:600}
+#progress{display:none}
+#progress.on{display:block}
+.steps{list-style:none;padding:0;margin:0}
+.steps li{display:flex;align-items:center;gap:10px;padding:9px 0;color:var(--mute)}
+.steps li i{flex:none;width:22px;height:22px;border-radius:50%;border:2px solid var(--line);display:inline-block}
+.steps li.run{color:var(--ink);font-weight:600}
+.steps li.run i{border-color:var(--amber);border-top-color:transparent;animation:spin .7s linear infinite}
+.steps li.ok{color:var(--ink)}
+.steps li.ok i{border-color:var(--green);background:var(--green) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 10.5l3.2 3.2L15 7' fill='none' stroke='%23fff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/16px no-repeat}
+@keyframes spin{to{transform:rotate(360deg)}}
+#result{display:none}
+#result.on{display:block}
+.demo{background:var(--warn-bg);color:var(--warn);border-radius:12px;padding:10px 14px;font-size:14px;margin:14px 0}
+.sum{display:grid;gap:14px}
+.sum img{width:100%;height:auto;border-radius:12px;background:#eef1ee;display:block}
+.total{font-size:34px;font-weight:800;line-height:1.1;color:var(--green-d);white-space:nowrap}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.kv div{background:var(--bg);border-radius:12px;padding:10px 12px}
+.kv span{display:block;color:var(--mute);font-size:12px}
+.kv b{font-size:16px}
+.badge{display:inline-block;background:var(--warn-bg);color:var(--warn);border-radius:999px;font-size:12px;font-weight:600;padding:3px 10px;vertical-align:middle}
+.sheets{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.sheets button{padding:0;border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden;text-align:left}
+.sheets img{width:100%;height:auto;aspect-ratio:297/210;display:block;object-fit:cover;background:#fafafa}
+.sheets span{display:block;padding:6px 8px;font-size:12px;line-height:1.25;color:var(--mute)}
+.sheets span b{color:var(--ink)}
+.sec{border-top:1px solid var(--line)}
+.sec summary{display:flex;justify-content:space-between;gap:10px;align-items:center;min-height:54px;cursor:pointer;list-style:none;font-weight:600}
+.sec summary::-webkit-details-marker{display:none}
+.sec summary::before{content:"+";flex:none;width:26px;height:26px;border-radius:50%;background:var(--green-l);color:var(--green);display:grid;place-items:center;font-weight:700}
+.sec[open] summary::before{content:"−"}
+.sec summary span{flex:1}
+.sec summary b{white-space:nowrap}
+.rows{padding:0 0 10px}
+.row{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:7px 0;border-top:1px dashed var(--line);font-size:14px}
+.row small{color:var(--mute);grid-column:1}
+.row b{grid-row:1/3;grid-column:2;align-self:center;white-space:nowrap;font-weight:600}
+.row .w{color:var(--green);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+.tot{border-top:1px solid var(--line);padding-top:8px;margin-top:2px}
+.tot p{display:flex;justify-content:space-between;gap:10px;padding:5px 0;color:var(--mute)}
+.tot p b{color:var(--ink);white-space:nowrap}
+.tot p.all{font-size:20px;font-weight:800;color:var(--ink);border-top:2px solid var(--ink);margin-top:6px;padding-top:10px}
+.dl{display:grid;gap:10px}
+.dl .btn small{font-weight:400;opacity:.8;font-size:13px}
+footer{color:var(--mute);font-size:13px;padding:8px 0 40px}
+footer p{margin-top:8px}
+#lb{position:fixed;inset:0;background:rgba(10,16,14,.94);display:none;z-index:50;flex-direction:column}
+#lb.on{display:flex}
+#lb .bar{display:flex;align-items:center;justify-content:space-between;color:#fff;padding:10px 14px;gap:10px;font-size:14px}
+#lb .bar button{background:rgba(255,255,255,.14);border:0;color:#fff;border-radius:10px;min-width:48px;min-height:44px;font-size:20px}
+#lb .stage{flex:1;display:grid;place-items:center;min-height:0;padding:0 6px;touch-action:pan-y}
+#lb img{max-width:100%;max-height:100%;background:#fff;border-radius:4px}
+#lb .nav{display:flex;gap:10px;padding:12px 14px calc(12px + env(safe-area-inset-bottom))}
+#lb .nav button{flex:1;min-height:50px;border:0;border-radius:12px;background:rgba(255,255,255,.14);color:#fff;font-weight:600}
+@media(min-width:760px){
+ .hero h1{font-size:36px}
+ .card{padding:24px}
+ .seg{grid-template-columns:repeat(4,1fr)}
+ .seg.two{grid-template-columns:repeat(2,1fr);max-width:520px}
+ .seg.three{max-width:780px}
+ .btn.main{max-width:420px}
+ .sum{grid-template-columns:1.15fr 1fr;align-items:center}
+ .total{font-size:44px}
+ .sheets{grid-template-columns:repeat(4,1fr)}
+ .dl{grid-template-columns:repeat(3,1fr)}
+ .row{font-size:15px}
+}
+</style>
+</head>
+<body>
+<header><div class="wrap"><b>ЭкостройИнвест</b><a href="../">← Все варианты</a></div></header>
+
+<div class="wrap">
+  <section class="hero">
+    <span class="tag">Вариант 3 · демо</span>
+    <h1>Проект и смета под ключ</h1>
+    <p>Задайте дом — и получите эскизный проект: альбом с планами, фасадами и разрезом, 3D-модель и смету по разделам. То, что обычно считают несколько дней.</p>
+  </section>
+
+  <section class="card" id="form">
+    <h2>1. Ваш дом</h2>
+    <div class="from2" id="from2"></div>
+    <p class="lbl">Этажей</p>
+    <div class="seg two" id="gFloors">
+      <button type="button" data-v="1" aria-pressed="false">1 этаж<small>пример 68 м²</small></button>
+      <button type="button" data-v="2" aria-pressed="true">2 этажа<small>пример 153 м²</small></button>
+    </div>
+    <p class="lbl">Габариты дома</p>
+    <div class="seg three" id="gSize">
+      <button type="button" data-v="8×8" aria-pressed="false">8×8 м</button>
+      <button type="button" data-v="10×9" aria-pressed="true">10×9 м</button>
+      <button type="button" data-v="12×10" aria-pressed="false">12×10 м</button>
+    </div>
+    <p class="lbl">Стены</p>
+    <div class="seg two" id="gWalls">
+      <button type="button" data-v="Каркас" aria-pressed="true">Каркас<small>утепление 250 мм</small></button>
+      <button type="button" data-v="Газобетон" aria-pressed="false">Газобетон<small>блок 400 мм</small></button>
+    </div>
+    <p class="fine">Планировку можно нарисовать самому: <a class="link" href="../v2/">открыть 3D-конструктор</a> — дом из него подставится сюда.</p>
+    <p style="margin-top:16px"><button class="btn main" id="go" type="button">Получить проект и смету</button></p>
+  </section>
+
+  <section class="card" id="progress" aria-live="polite">
+    <h2>Собираем проект…</h2>
+    <ul class="steps" id="steps">
+      <li><i></i>Строим 3D-модель дома (BIM)</li>
+      <li><i></i>Считаем объёмы материалов по модели</li>
+      <li><i></i>Считаем смету по прайсу</li>
+      <li><i></i>Чертим планы, фасады, разрез, свайное поле</li>
+      <li><i></i>Собираем альбом в PDF</li>
+    </ul>
+  </section>
+
+  <div id="result">
+    <div class="demo" id="demoNote"></div>
+
+    <section class="card">
+      <h2>2. Ваш эскизный проект готов</h2>
+      <div class="sum">
+        <img id="img3d" alt="3D-вид дома" width="1280" height="960">
+        <div>
+          <p style="color:var(--mute);font-size:14px">Стоимость строительства по смете <span class="badge">демо-прайс</span></p>
+          <p class="total" id="total"></p>
+          <div class="kv">
+            <div><span>Общая площадь</span><b id="kArea"></b></div>
+            <div><span>За м²</span><b id="kM2"></b></div>
+            <div><span>Стены</span><b id="kWalls"></b></div>
+            <div><span>Листов в альбоме</span><b id="kSheets"></b></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Альбом: <span id="shN"></span></h2>
+      <div class="sheets" id="sheets"></div>
+      <p class="fine">Нажмите на лист, чтобы открыть крупно.</p>
+    </section>
+
+    <section class="card">
+      <h2>Смета по разделам <span class="badge">демо-прайс, будут цены ЭкостройИнвест</span></h2>
+      <div id="secs"></div>
+      <div class="tot" id="tot"></div>
+      <p class="fine">Объёмы посчитаны из 3D-модели дома: изменили дом — пересчиталась смета. Цены в демо условные, в рабочей версии подставляется прайс ЭкостройИнвест.</p>
+    </section>
+
+    <section class="card">
+      <h2>Скачать</h2>
+      <div class="dl">
+        <a class="btn" id="dPdf" download>Альбом PDF<small id="dPdfN"></small></a>
+        <a class="btn ghost" id="dXls" download>Смета Excel<small>с формулами</small></a>
+        <a class="btn ghost" id="dIfc" download>IFC-модель<small>для BIM-программ</small></a>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>3. Обсудить с менеджером</h2>
+      <p style="color:var(--mute);margin-bottom:14px">Менеджер получит номер проекта и сразу увидит ваш дом и смету.</p>
+      <a class="btn green" id="wa" target="_blank" rel="noopener">Отправить заявку в WhatsApp</a>
+      <p style="margin-top:10px"><button class="btn ghost" id="again" type="button">Изменить дом</button></p>
+    </section>
+  </div>
+
+  <footer>
+    <p><b>Демо.</b> Здесь показаны два заранее собранных примера. В рабочей версии альбом собирается под каждый дом за секунды.</p>
+    <p>Это эскизный проект: он показывает дом, планировку и стоимость. Сваи и фундамент на мерзлоте рассчитывает инженер — как указано в альбоме. Цены сметы — демо-прайс, не оферта.</p>
+  </footer>
+</div>
+
+<div id="lb" role="dialog" aria-modal="true" aria-label="Лист альбома">
+  <div class="bar"><span id="lbT"></span><button type="button" id="lbX" aria-label="Закрыть">×</button></div>
+  <div class="stage" id="lbS"><img id="lbI" alt=""></div>
+  <div class="nav"><button type="button" id="lbP">← Назад</button><button type="button" id="lbN">Дальше →</button></div>
+</div>
+
+<script>
+/* ===== НАСТРОЙКИ ===== */
+const CONFIG = {
+  whatsapp: '79644268085',          // тот же номер, что в вариантах 1 и 2
+  demoDelayMs: 520,                 // пауза на шаг «сборки» (в рабочей версии — реальный расчёт, ~2 с)
+  byFloors: { '1': '0002', '2': '0001' }   // какой готовый пример показывать
+};
+/* Данные примеров: выгружены из смет ЭП-0001 и ЭП-0002 (level3). Цены — ДЕМО-ПРАЙС. */
+const EX = {"0001":{"code":"ЭП-0001","file":"EP-0001","name":"Дом 10×9, 2 этажа","walls":"Каркас 200+50 мм, минвата 250 мм","floors":2,"sheets":["Коммерческое предложение","План 1 этажа","План 2 этажа","Фасады: южный и восточный","Фасады: северный и западный","Разрез 1-1","Свайное поле и ростверк","Спецификация материалов","Сводная смета","Смета, лист 1","Смета, лист 2","Смета, лист 3","Состав и ограничения"],"sections":[{"name":"1. Фундамент","sum":1610350,"lines":[["Бетон В25 F200 W6","м³",12.34,11000,135733,0],["Арматура А500С d12–14","т",1.26,85000,106922,0],["Опалубка (щиты, доска)","м²",59.9,650,38935,0],["Устройство ж/б ростверка","м³",11.98,12000,143760,1],["Свая ж/б С80.30","шт",30,24000,720000,0],["Лидерное бурение и погружение сваи","шт",30,14000,420000,1],["Срубка и выравнивание оголовков","шт",30,1500,45000,1]]},{"name":"2. Наружные стены","sum":1500774,"lines":[["Доска 50×200 камерной сушки","м³",4.67,30000,140176,0],["Брус 50×50","м³",0.96,30000,28672,0],["Утеплитель минвата (плиты)","м³",50.68,5800,293964,0],["Плита OSB-3 12 мм","м²",212.39,700,148672,0],["Ветро-влагозащитная мембрана","м²",222.04,70,15543,0],["Пароизоляционная плёнка","м²",222.04,35,7771,0],["Контробрешётка 25×50","м³",0.45,26000,11596,0],["Имитация бруса 20×146","м²",212.39,950,201769,0],["Внутренняя обшивка (вагонка/ГКЛ)","м²",212.39,600,127433,0],["Крепёж, антисептик (на м²)","м²",193.08,180,34754,0],["Монтаж каркаса стен","м²",193.08,950,183426,1],["Утепление, ветро- и пароизоляция","м²",193.08,320,61786,1],["Фасадная отделка","м²",193.08,750,144810,1],["Внутренняя обшивка стен","м²",193.08,520,100402,1]]},{"name":"3. Перегородки","sum":473953,"lines":[["Доска 50×100","м³",1.57,30000,46980,0],["Утеплитель минвата (звукоизоляция)","м³",11.96,5800,69359,0],["Обшивка (вагонка/ГКЛ)","м²",250.56,600,150335,0],["Крепёж, антисептик (на м²)","м²",113.89,180,20500,0],["Монтаж перегородок","м²",113.89,600,68334,1],["Обшивка перегородок","м²",227.78,520,118446,1]]},{"name":"4. Перекрытия и полы","sum":1409989,"lines":[["Доска 50×200 (балки)","м³",1.74,30000,52114,0],["Утеплитель минвата (плиты)","м³",24.87,5800,144260,0],["Ветрозащитная мембрана","м²",90.8,70,6356,0],["Пароизоляционная плёнка","м²",90.8,35,3178,0],["Доска 25 мм (ходовые мостки)","м³",0.43,24000,10423,0],["Подшивка потолка (вагонка/ГКЛ)","м²",86.86,600,52114,0],["Монтаж балок перекрытия","м²",78.96,750,59220,1],["Утепление и изоляция","м²",78.96,320,25267,1],["Подшивка потолка","м²",78.96,480,37901,1],["Доска 50×200 (балки)","м³",1.74,30000,52114,0],["Брус 50×50 (черепной, поперечный)","м³",0.87,30000,26057,0],["Доска 25 мм (черновой настил)","м³",2.17,24000,52114,0],["Утеплитель минвата (плиты)","м³",20.73,5800,120217,0],["Ветрозащитная мембрана","м²",90.8,70,6356,0],["Пароизоляционная плёнка","м²",90.8,35,3178,0],["Фанера 18 мм","м²",86.86,950,82513,0],["Напольное покрытие (ламинат/линолеум)","м²",82.91,950,78763,0],["Монтаж балок перекрытия","м²",78.96,750,59220,1],["Утепление и изоляция","м²",78.96,320,25267,1],["Устройство чистовых полов","м²",78.96,650,51324,1],["Доска 50×200 (балки)","м³",1.74,30000,52114,0],["Утеплитель минвата (звукоизоляция)","м³",8.29,5800,48087,0],["Фанера 18 мм","м²",86.86,950,82513,0],["Напольное покрытие (ламинат/линолеум)","м²",82.91,950,78763,0],["Подшивка потолка (вагонка/ГКЛ)","м²",86.86,600,52114,0],["Монтаж балок перекрытия","м²",78.96,750,59220,1],["Устройство чистовых полов","м²",78.96,650,51324,1],["Подшивка потолка","м²",78.96,480,37901,1]]},{"name":"5. Кровля","sum":622822,"lines":[["Доска 50×150","м³",0.39,30000,11574,0],["Ветро-влагозащитная мембрана","м²",26.89,70,1882,0],["Имитация бруса 20×146","м²",25.72,950,24435,0],["Монтаж каркаса фронтонов","м²",23.38,950,22214,1],["Фасадная отделка","м²",23.38,750,17537,1],["Доска 50×200 (стропила)","м³",2.79,30000,83831,0],["Доска 25×100 (обрешётка)","м³",1.01,24000,24143,0],["Брус 50×50 (контробрешётка)","м³",0.59,30000,17605,0],["Гидроизоляционная мембрана","м²",146.07,90,13146,0],["Металлочерепица 0,5 мм","м²",146.07,800,116856,0],["Доборные элементы кровли (на м²)","м²",127.02,260,33024,0],["Водосточная система (на м²)","м²",127.02,320,40645,0],["Монтаж стропильной системы","м²",127.02,950,120666,1],["Устройство кровельного покрытия","м²",127.02,750,95263,1]]},{"name":"6. Окна и двери","sum":687736,"lines":[["Дверь входная с терморазрывом","шт",1,48000,48000,0],["Монтаж входной двери","шт",1,5500,5500,1],["Дверь межкомнатная (комплект)","шт",11,13000,143000,0],["Монтаж межкомнатной двери","шт",11,3200,35200,1],["Окно ПВХ, 2-кам. стеклопакет","м²",25.62,13000,333060,0],["Подоконник, отлив, откосы (на м² окна)","м²",25.62,2200,56364,0],["Монтаж окон с откосами","м²",25.62,2600,66612,1]]}],"mat":4250026,"work":2055598,"deliv":297502,"delivPct":7,"res":330156,"resPct":5,"total":6933282,"rooms":[["1 этаж","Спальня",20.6],["1 этаж","Кухня-гостиная",26.3],["1 этаж","Санузел",5],["1 этаж","Котельная",4.4],["1 этаж","Холл, лестница",10.6],["1 этаж","Прихожая",9.7],["2 этаж","Спальня",23.4],["2 этаж","Спальня",23.4],["2 этаж","Санузел",5],["2 этаж","Гардеробная",4.4],["2 этаж","Холл, лестница",10.6],["2 этаж","Спальня",9.7]],"area":153.1},"0002":{"code":"ЭП-0002","file":"EP-0002","name":"Дом 10×9, 1 этаж","walls":"Газобетон 400 мм","floors":1,"sheets":["Коммерческое предложение","План 1 этажа","Фасады: южный и восточный","Фасады: северный и западный","Разрез 1-1","Свайное поле и ростверк","Спецификация материалов","Сводная смета","Смета, лист 1","Смета, лист 2","Состав и ограничения"],"sections":[{"name":"1. Фундамент","sum":1637423,"lines":[["Бетон В25 F200 W6","м³",11.98,11000,131768,0],["Арматура А500С d12–14","т",1.22,85000,103798,0],["Опалубка (щиты, доска)","м²",58.15,650,37798,0],["Устройство ж/б ростверка","м³",11.63,12000,139560,1],["Свая ж/б С80.30","шт",31,24000,744000,0],["Лидерное бурение и погружение сваи","шт",31,14000,434000,1],["Срубка и выравнивание оголовков","шт",31,1500,46500,1]]},{"name":"2. Наружные стены","sum":910891,"lines":[["Блок газобетонный D400","м³",37.85,9000,340617,0],["Клей для газобетона, мешок 25 кг","шт",38.58,650,25078,0],["Утеплитель минвата (плиты)","м³",9.65,5800,55943,0],["Ветро-влагозащитная мембрана","м²",105.64,70,7395,0],["Подсистема вентфасада","м²",91.86,550,50523,0],["Облицовка фасада","м²",101.05,950,95994,0],["Штукатурка гипсовая, мешок 30 кг","шт",31.83,550,17506,0],["Кладка газобетона","м³",36.74,4200,154325,1],["Утепление и вентфасад","м²",91.86,1300,119418,1],["Штукатурка стен","м²",91.86,480,44093,1]]},{"name":"3. Перегородки","sum":213443,"lines":[["Доска 50×100","м³",0.71,30000,21157,0],["Утеплитель минвата (звукоизоляция)","м³",5.39,5800,31236,0],["Обшивка (вагонка/ГКЛ)","м²",112.84,600,67703,0],["Крепёж, антисептик (на м²)","м²",51.29,180,9232,0],["Монтаж перегородок","м²",51.29,600,30774,1],["Обшивка перегородок","м²",102.58,520,53342,1]]},{"name":"4. Перекрытия и полы","sum":844107,"lines":[["Доска 50×200 (балки)","м³",1.55,30000,46405,0],["Утеплитель минвата (плиты)","м³",22.15,5800,128456,0],["Ветрозащитная мембрана","м²",80.86,70,5660,0],["Пароизоляционная плёнка","м²",80.86,35,2830,0],["Доска 25 мм (ходовые мостки)","м³",0.39,24000,9281,0],["Подшивка потолка (вагонка/ГКЛ)","м²",77.34,600,46405,0],["Монтаж балок перекрытия","м²",70.31,750,52732,1],["Утепление и изоляция","м²",70.31,320,22499,1],["Подшивка потолка","м²",70.31,480,33749,1],["Доска 50×200 (балки)","м³",1.55,30000,46405,0],["Брус 50×50 (черепной, поперечный)","м³",0.77,30000,23202,0],["Доска 25 мм (черновой настил)","м³",1.93,24000,46405,0],["Утеплитель минвата (плиты)","м³",18.46,5800,107047,0],["Ветрозащитная мембрана","м²",80.86,70,5660,0],["Пароизоляционная плёнка","м²",80.86,35,2830,0],["Фанера 18 мм","м²",77.34,950,73474,0],["Напольное покрытие (ламинат/линолеум)","м²",73.83,950,70134,0],["Монтаж балок перекрытия","м²",70.31,750,52732,1],["Утепление и изоляция","м²",70.31,320,22499,1],["Устройство чистовых полов","м²",70.31,650,45702,1]]},{"name":"5. Кровля","sum":583658,"lines":[["Доска 50×150","м³",0.31,30000,9348,0],["Ветро-влагозащитная мембрана","м²",21.72,70,1520,0],["Имитация бруса 20×146","м²",20.77,950,19735,0],["Монтаж каркаса фронтонов","м²",18.89,950,17941,1],["Фасадная отделка","м²",18.89,750,14164,1],["Доска 50×200 (стропила)","м³",2.67,30000,80105,0],["Доска 25×100 (обрешётка)","м³",0.96,24000,23070,0],["Брус 50×50 (контробрешётка)","м³",0.56,30000,16822,0],["Гидроизоляционная мембрана","м²",139.58,90,12562,0],["Металлочерепица 0,5 мм","м²",139.58,800,111662,0],["Доборные элементы кровли (на м²)","м²",121.37,260,31557,0],["Водосточная система (на м²)","м²",121.37,320,38839,0],["Монтаж стропильной системы","м²",121.37,950,115303,1],["Устройство кровельного покрытия","м²",121.37,750,91029,1]]},{"name":"6. Окна и двери","sum":389932,"lines":[["Дверь входная с терморазрывом","шт",1,48000,48000,0],["Монтаж входной двери","шт",1,5500,5500,1],["Дверь межкомнатная (комплект)","шт",6,13000,78000,0],["Монтаж межкомнатной двери","шт",6,3200,19200,1],["Окно ПВХ, 2-кам. стеклопакет","м²",13.44,13000,174720,0],["Подоконник, отлив, откосы (на м² окна)","м²",13.44,2200,29568,0],["Монтаж окон с откосами","м²",13.44,2600,34944,1]]}],"mat":3029448,"work":1550006,"deliv":212061,"delivPct":7,"res":239576,"resPct":5,"total":5031091,"rooms":[["1 этаж","Спальня",18.4],["1 этаж","Кухня-гостиная",23.8],["1 этаж","Санузел",4.6],["1 этаж","Котельная",3.4],["1 этаж","Холл, лестница",9.9],["1 этаж","Прихожая",8.2]],"area":68.3}};
+
+const $ = s => document.querySelector(s);
+const nf = new Intl.NumberFormat('ru-RU');
+const rub = n => nf.format(Math.round(n)) + ' ₽';
+const num = n => String(n).replace('.', ',');
+const sel = { floors: '2', size: '10×9', walls: 'Каркас' };
+
+function bindSeg(id, key) {
+  const g = $(id);
+  g.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    sel[key] = b.dataset.v; paintSeg(id, key);
+  });
+}
+function paintSeg(id, key) { document.querySelectorAll(id + ' button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === sel[key])); }
+bindSeg('#gFloors', 'floors'); bindSeg('#gSize', 'size'); bindSeg('#gWalls', 'walls');
+
+/* Дом из конструктора (вариант 2) лежит в localStorage того же сайта */
+(function fromV2() {
+  let d = null;
+  try { d = JSON.parse(localStorage.getItem('ecostroy.draft.v2') || 'null'); } catch (e) {}
+  if (!d || !d.floors) return;
+  sel.floors = String(d.floors) === '2' ? '2' : '1';
+  paintSeg('#gFloors', 'floors');
+  const parts = [sel.floors === '2' ? '2 этажа' : '1 этаж'];
+  if (d.area) parts.push(d.area + ' м²');
+  if (d.plan) parts.push('своя планировка');
+  const box = $('#from2');
+  box.textContent = 'Взяли ваш дом из 3D-конструктора: ' + parts.join(', ') + '.';
+  box.classList.add('on');
+})();
+
+let cur = null, sheetIdx = 0, timer = null;
+
+$('#go').addEventListener('click', () => {
+  const steps = [...document.querySelectorAll('#steps li')];
+  steps.forEach(li => li.className = '');
+  $('#result').classList.remove('on');
+  $('#progress').classList.add('on');
+  $('#go').disabled = true;
+  $('#progress').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  let i = 0;
+  (function next() {
+    if (i > 0) steps[i - 1].className = 'ok';
+    if (i < steps.length) { steps[i].className = 'run'; i++; timer = setTimeout(next, CONFIG.demoDelayMs); }
+    else { $('#go').disabled = false; show(); }
+  })();
+});
+
+function show(quiet) {
+  cur = EX[CONFIG.byFloors[sel.floors]];
+  const base = cur.file;
+  $('#progress').classList.remove('on');
+  const asked = (sel.floors === '2' ? '2 этажа' : '1 этаж') + ', ' + sel.size.replace('×', ' × ') + ' м, ' + sel.walls.toLowerCase();
+  $('#demoNote').innerHTML = '<b>Демо.</b> Вы выбрали: ' + asked + '. Показываем готовый пример ' + cur.code + ' — «' + cur.name + '», ' +
+    cur.walls.toLowerCase() + '. В рабочей версии альбом собирается точно под ваш дом за секунды.';
+  $('#img3d').src = 'img/' + base + '-3d.png';
+  $('#total').textContent = rub(cur.total);
+  $('#kArea').textContent = num(cur.area) + ' м²';
+  $('#kM2').textContent = rub(cur.total / cur.area);
+  $('#kWalls').textContent = cur.walls.split(',')[0];
+  $('#kSheets').textContent = cur.sheets.length;
+  $('#shN').textContent = cur.sheets.length + ' листов';
+  $('#sheets').innerHTML = cur.sheets.map((t, i) =>
+    '<button type="button" data-i="' + i + '"><img loading="lazy" width="994" height="703" src="img/' + base + '-p-' + String(i + 1).padStart(2, '0') + '.jpg" alt="Лист ' + (i + 1) + ': ' + t + '"><span><b>Лист ' + (i + 1) + '.</b> ' + t + '</span></button>').join('');
+  $('#secs').innerHTML = cur.sections.map(s =>
+    '<details class="sec"><summary><span>' + s.name + '</span><b>' + rub(s.sum) + '</b></summary><div class="rows">' +
+    s.lines.map(l => '<div class="row"><span>' + (l[5] ? '<span class="w">работа</span> ' : '') + l[0] + '</span><b>' + rub(l[4]) + '</b><small>' +
+      num(l[2]) + ' ' + l[1] + ' × ' + nf.format(l[3]) + ' ₽</small></div>').join('') + '</div></details>').join('');
+  $('#tot').innerHTML =
+    '<p><span>Материалы</span><b>' + rub(cur.mat) + '</b></p>' +
+    '<p><span>Работы</span><b>' + rub(cur.work) + '</b></p>' +
+    '<p><span>Доставка, ' + cur.delivPct + '%</span><b>' + rub(cur.deliv) + '</b></p>' +
+    '<p><span>Резерв на непредвиденное, ' + cur.resPct + '%</span><b>' + rub(cur.res) + '</b></p>' +
+    '<p class="all"><span>Всего</span><b>' + rub(cur.total) + '</b></p>';
+  $('#dPdf').href = 'files/' + base + '-album.pdf';
+  $('#dPdfN').textContent = cur.sheets.length + ' листов';
+  $('#dXls').href = 'files/' + base + '-smeta.xlsx';
+  $('#dIfc').href = 'files/' + base + '.ifc';
+  $('#wa').href = 'https://wa.me/' + CONFIG.whatsapp + '?text=' + encodeURIComponent(
+    'Здравствуйте! Хочу обсудить эскизный проект ' + cur.code + ' («' + cur.name + '»), смета ' + rub(cur.total) + '.');
+  $('#result').classList.add('on');
+  if (!quiet) $('#result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+$('#again').addEventListener('click', () => { $('#form').scrollIntoView({ behavior: 'smooth' }); });
+
+/* Просмотр листов */
+function openSheet(i) {
+  sheetIdx = (i + cur.sheets.length) % cur.sheets.length;
+  $('#lbI').src = 'img/' + cur.file + '-p-' + String(sheetIdx + 1).padStart(2, '0') + '.jpg';
+  $('#lbT').textContent = 'Лист ' + (sheetIdx + 1) + ' из ' + cur.sheets.length + '. ' + cur.sheets[sheetIdx];
+  $('#lb').classList.add('on'); document.body.style.overflow = 'hidden';
+}
+function closeSheet() { $('#lb').classList.remove('on'); document.body.style.overflow = ''; }
+$('#sheets').addEventListener('click', e => { const b = e.target.closest('button'); if (b) openSheet(+b.dataset.i); });
+$('#lbX').addEventListener('click', closeSheet);
+$('#lbP').addEventListener('click', () => openSheet(sheetIdx - 1));
+$('#lbN').addEventListener('click', () => openSheet(sheetIdx + 1));
+document.addEventListener('keydown', e => {
+  if (!$('#lb').classList.contains('on')) return;
+  if (e.key === 'Escape') closeSheet();
+  if (e.key === 'ArrowLeft') openSheet(sheetIdx - 1);
+  if (e.key === 'ArrowRight') openSheet(sheetIdx + 1);
+});
+let tx = null;
+$('#lbS').addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
+$('#lbS').addEventListener('touchend', e => {
+  if (tx === null) return; const dx = e.changedTouches[0].clientX - tx; tx = null;
+  if (Math.abs(dx) > 40) openSheet(sheetIdx + (dx < 0 ? 1 : -1));
+});
+/* ?demo=1|2 — сразу показать результат (для скриншотов и ссылок из презентации) */
+const q = new URLSearchParams(location.search).get('demo');
+if (q === '1' || q === '2') { sel.floors = q; paintSeg('#gFloors', 'floors'); if (q === '1') { sel.walls = 'Газобетон'; paintSeg('#gWalls', 'walls'); } show(true); }
+</script>
+</body>
+</html>
